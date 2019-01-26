@@ -16,14 +16,14 @@ def make_partitions(scenes,n_partitions=1):
 	n_scenes = len(scenes)
 	print "Found {}  scenes".format(n_scenes)
 	for _i in range(n_partitions):
-		shuffled_scenes = shuffle(scenes)
+		shuffle(scenes)
 		train = scenes[0:int(0.6*n_scenes)]
 		val_test = scenes[int(0.6*n_scenes):]
 		val =  val_test[0:int(0.5*len(val_test))]
 		test =  val_test[int(0.5*len(val_test)):]
 		print "{} training scenes\n{} validation scenes\n{} testing scenes".format(len(train), len(val), len(test))
 		total_depths = 0
-		for _j, scene in enumerate(shuffled_scenes):
+		for _j, scene in enumerate(scenes):
 			n_depths = len(get_depths_from_folder(scene))
 			total_depths+=n_depths
 			print "Scene {} contains {} samples".format(_j,n_depths)
