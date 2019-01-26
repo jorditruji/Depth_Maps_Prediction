@@ -14,7 +14,8 @@ def get_depths_from_folder(path):
 def make_partitions(scenes,n_partitions=1):
 	#Partitions 0.6 0.2 0.2 
 	n_scenes = len(scenes)
-	for _ i in range(n_partitions):
+	print "Found {}  scenes".format(n_scenes)
+	for _i in range(n_partitions):
 		shuffled_scenes = shuffle(scenes)
 		train = scenes[0:int(0.6*n_scenes)]
 		val_test = scenes[int(0.6*n_scenes):]
@@ -25,7 +26,7 @@ def make_partitions(scenes,n_partitions=1):
 
 
 
-DATA_PATH = '/projects/world3d/2017-06-scannet'
+DATA_PATH = '/projects/world3d/2017-06-scannet/'
 
 scenes = read_scenes(DATA_PATH)
 make_partitions(scenes)
