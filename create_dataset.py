@@ -11,7 +11,7 @@ def get_depths_from_folder(path):
 	return glob(path+'*.pgm')
 
 
-def make_partitions(scenes,n_partitions):
+def make_partitions(scenes,n_partitions=1):
 	#Partitions 0.6 0.2 0.2 
 	n_scenes = len(scenes)
 	for _ i in range(n_partitions):
@@ -20,8 +20,12 @@ def make_partitions(scenes,n_partitions):
 		val_test = scenes[int(0.6*n_scenes):]
 		val =  val_test[0:int(0.5*len(val_test))]
 		test =  val_test[int(0.5*len(val_test)):]
+		print "{} training scenes\n{} validation scenes\n {} testing scenes".format(len(train), len(val), len(test))
 
 
 
 
 DATA_PATH = '/projects/world3d/2017-06-scannet'
+
+scenes = read_scenes(DATA_PATH)
+make_partitions(scenes)
