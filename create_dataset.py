@@ -22,8 +22,8 @@ def make_partitions(scenes,n_partitions=1):
 		val =  val_test[0:int(0.5*len(val_test))]
 		test =  val_test[int(0.5*len(val_test)):]
 		print "{} training scenes\n{} validation scenes\n {} testing scenes".format(len(train), len(val), len(test))
-		print "Scene 1: {}".format(train[0])
-		print len(get_depths_from_folder(train[0]))
+		for _j, scene in enumerate(train):
+			print "Scene {} contains {}".format(_j,len(get_depths_from_folder(scene)))
 
 
 
