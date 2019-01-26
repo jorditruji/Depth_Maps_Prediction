@@ -21,10 +21,13 @@ def make_partitions(scenes,n_partitions=1):
 		val_test = scenes[int(0.6*n_scenes):]
 		val =  val_test[0:int(0.5*len(val_test))]
 		test =  val_test[int(0.5*len(val_test)):]
-		print "{} training scenes\n{} validation scenes\n {} testing scenes".format(len(train), len(val), len(test))
-		for _j, scene in enumerate(train):
-			print "Scene {} contains {}".format(_j,len(get_depths_from_folder(scene)))
-
+		print "{} training scenes\n{} validation scenes\n{} testing scenes".format(len(train), len(val), len(test))
+		total_depths = 0
+		for _j, scene in enumerate(shuffled_scenes):
+			n_depths = len(get_depths_from_folder(scene))
+			total_depths+=n_depths
+			print "Scene {} contains {} samples".format(_j,n_depths)
+		print "Total samples {}".format(total_depths)
 
 
 DATA_PATH = '/projects/world3d/2017-06-scannet/'
