@@ -1,5 +1,6 @@
 from glob import glob
 from random import shuffle
+import numpy as np
 
 def read_scenes(path):
 	# Reads all scenes (folders) of the dataset
@@ -43,8 +44,7 @@ def make_partitions(scenes,n_partitions=1):
 		print "Saving data!!!! Finished"
 		np.save('dataset',dataset)
 
-
-DATA_PATH = '/projects/world3d/2017-06-scannet/'
-
-scenes = read_scenes(DATA_PATH)
-make_partitions(scenes)
+if __name__ == '__main__':
+	DATA_PATH = '/projects/world3d/2017-06-scannet/'
+	scenes = read_scenes(DATA_PATH)
+	make_partitions(scenes)
