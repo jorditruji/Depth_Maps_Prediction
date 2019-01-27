@@ -19,7 +19,7 @@ def read_depth(file):
 def fill_holes(img):
 	print "Holes"
 	img=img/256
-	mask = np.ones(img.shape)*img
+	mask = img.copy()
 	print type(mask)
 	print np.unique(mask)
 
@@ -34,7 +34,7 @@ def fill_holes(img):
 	print mask.shape
 	print img.shape
 	print type(mask)
-	print np.unique(img)
+	print np.unique(mask)
 	dst_TELEA = cv2.inpaint(img,mask,3,cv2.INPAINT_TELEA)
 
 
