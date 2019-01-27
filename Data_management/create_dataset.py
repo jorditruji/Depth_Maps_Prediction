@@ -29,19 +29,21 @@ def make_partitions(scenes,n_partitions=1):
 		
 		total_depths = 0
 		for _j, scene in enumerate(train):
-			dataset['train'].append(get_depths_from_folder(scene))
+			dataset['train']+=get_depths_from_folder(scene)
 		print "Train samples {}".format(len(dataset['train']))
 
 		for _j, scene in enumerate(val):
-			dataset['val'].append(get_depths_from_folder(scene))
+			dataset['val']+=get_depths_from_folder(scene)
 		print "Validation samples {}".format(len(dataset['val']))
 
 		for _j, scene in enumerate(test):
-			dataset['test'].append(get_depths_from_folder(scene))
+			dataset['test']+=get_depths_from_folder(scene)
 		print "Validation samples {}".format(len(dataset['test']))
 
 		print "Saving data!!!! Finished"
 		np.save('dataset',dataset)
+
+
 DATA_PATH = '/projects/world3d/2017-06-scannet/'
 
 scenes = read_scenes(DATA_PATH)
