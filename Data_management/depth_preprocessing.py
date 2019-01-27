@@ -1,9 +1,16 @@
 # -*- coding: utf-8 -*-
+from __future__ import division
 import cv2
 from read_pgm_depth import NetpbmFile
 import numpy as np
 from matplotlib import pyplot
+from itertools import product
+import time
+from PIL import Image
 
+def equalize_hist(img):
+	equ = cv2.equalizeHist(img)
+	return equ
 
 def read_depth(file):
 	try:
@@ -14,39 +21,75 @@ def read_depth(file):
 	except ValueError as e:
 		# raise  # enable for debugging
 		print(file, e)
+
+
+def process_depth_TFG(img):
+	#BASURAAA
+	zmax=np.max(img)
+	norm_img=np.zeros(img.shape,dtype=np.uint8)
+	mask=np.zeros(img.shape,dtype=np.uint8)
+	mask_std=np.zeros(img.shape,dtype=np.uint8)
+	cont=0
+	h,w = img.shape
+	for pos in product(range(h), range(w)):
+		pixel =  img.item(pos[0],pos[1])
+		if pixel>0:
+			new_pix2=(float(pixel)/float(zmax))*254.0
+			norm_img[pos]=255-new_pix2
+			mask[pos]=0
+		else:
+			norm_img[pos]=0
+			mask[pos]=255
+		cont+=1
+
+	dst_TELEA = cv2.inpaint(norm_img,mask,3,cv2.INPAINT_TELEA)
+	#dst_TELEA=equalize_hist(dst_TELEA)
+	print np.unique(mask)
+
+	return (dst_TELEA-255)*-1,mask
 		
 
-def fill_holes(img):
-	print "Holes"
-	img=img/256
+def fill_holes(img,inpaint=0):
+	# Converts depth information to uint8 gray scale and inpaints it
+	#img=img/255.
 	mask = img.copy()
-	print type(mask)
-	print np.unique(mask)
-
+	z_max = np.max(img)
+	img = ((img/z_max)*255).astype('uint8')
 	mask[mask==0]= 1
 	mask[mask>1] = 0
-	print np.unique(mask)
+	mask[mask>1] = 255
+	mask=np.expand_dims(mask,-1)
+	img = np.expand_dims(img,-1)
+	mask = mask.astype('uint8')
+	if inpaint == 0:
+		processed_depth = cv2.inpaint(img,mask,3,cv2.INPAINT_NS)
+	else:
+		processed_depth = cv2.inpaint(img,mask,3,cv2.INPAINT_TELEA)
+ 	#dst_TELEA_inpainted=equalize_hist(dst_TELEA_inpainted)
+ 	real_depth = (processed_depth/255)*z_max
+	return processed_depth,mask, real_depth
 
-	mask=np.expand_dims(mask,0)
-	img = np.expand_dims(img,0)
-	img.astype('uint8')
-	mask.astype('uint8')
-	print mask.shape
-	print img.shape
-	print type(mask)
-	print np.unique(mask)
-	dst_TELEA = cv2.inpaint(img,mask,3,cv2.INPAINT_TELEA)
+
+
 
 
 if __name__ == '__main__':
-	depth_sample = '../Test_samples/frame-000000.depth.pgm'
-	RGB_sample = '../Test_samples/frame-000000.color.jpg'
+	depth_sample = '../Test_samples/frame-000050.depth.pgm'
+	RGB_sample = '../Test_samples/frame-000050.color.jpg'
+	rgb_im = Image.open(RGB_sample)
 	depth = read_depth(depth_sample)
-	print depth[0][0]
-	processed_depth = fill_holes(depth)
+	processed_depth,mask,real_depth = fill_holes(depth,1)
+	processed_depth_new,mask_new, real_depth = fill_holes(depth,0)
 	# Invertim prop de lluny
 	#depth = 65535 - depth
-	pyplot.imshow(depth, 'gray', interpolation='nearest')
-	pyplot.figure()
-	pyplot.imshow(depth,'gray', interpolation='nearest')
+	f, axarr = pyplot.subplots(2, 2)
+	axarr[0,0].imshow(depth, 'gray', interpolation='nearest')
+	axarr[0,0].set_title('Original depth')
+	axarr[0,1].imshow(rgb_im)
+	axarr[0,1].set_title('Original RGB')
+	axarr[1,0].imshow(processed_depth_new,'gray', interpolation='nearest')
+	axarr[1,0].set_title('Navier Stokes Impaint')
+	axarr[1,1].imshow(processed_depth,'gray', interpolation='nearest')
+	axarr[1,1].set_title('TELEA Impaint')
 	pyplot.show()
+	
