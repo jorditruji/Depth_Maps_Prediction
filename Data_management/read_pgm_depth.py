@@ -394,12 +394,13 @@ def main(argv=None):
 
             maxval = numpy.max(img) if pam.maxval is None else pam.maxval
             img = img / float(maxval)
-            print(maxval)
             img *= 255
             numpy.rint(img, out=img)
             numpy.clip(img, 0, 255, out=img)
             img = img.astype('uint8')
         
+        img=img/256
+        print(numpy.unique(img))
         pyplot.imshow(img, cmap, interpolation='nearest')
         pyplot.title('"%s %s %s %s' % (fname, unicode(pam.magicnum),
                                        shape, img.dtype))
