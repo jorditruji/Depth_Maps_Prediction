@@ -13,8 +13,9 @@ def get_depths_from_folder(path):
 
 
 def make_partitions(scenes,n_partitions=1):
-	#Partitions 0.6 0.2 0.2 
+	#Partitions train val test 0.6 0.2 0.2 
 	n_scenes = len(scenes)
+	# Initialize dict to store data paths
 	dataset = {}
 	dataset['train']=[]
 	dataset['val']=[]
@@ -28,7 +29,7 @@ def make_partitions(scenes,n_partitions=1):
 		test =  val_test[int(0.5*len(val_test)):]
 		print "{} training scenes\n{} validation scenes\n{} testing scenes".format(len(train), len(val), len(test))
 		
-		total_depths = 0
+		# Read depth file names and add them to dataset splits
 		for _j, scene in enumerate(train):
 			dataset['train']+=get_depths_from_folder(scene)
 		print "Train samples {}".format(len(dataset['train']))
@@ -39,7 +40,7 @@ def make_partitions(scenes,n_partitions=1):
 
 		for _j, scene in enumerate(test):
 			dataset['test']+=get_depths_from_folder(scene)
-		print "Validation samples {}".format(len(dataset['test']))
+		print "Test samples {}".format(len(dataset['test']))
 
 		print "Saving data!!!! Finished"
 		np.save('dataset',dataset)

@@ -13,9 +13,11 @@ def equalize_hist(img):
 	return equ
 
 def read_depth(file):
+	start_time = time.time()
 	try:
 		with NetpbmFile(file) as pam:
 			img = pam.asarray(copy=False)
+			print("--- %s seconds reading depth frame---" % (time.time() - start_time))
 			return img
 
 	except ValueError as e:
@@ -49,12 +51,13 @@ def process_depth_TFG(img):
 	return (dst_TELEA-255)*-1,mask
 		
 
-def fill_holes(img,inpaint=0):
+def process_depth(img,inpaint=0):
 	# Converts depth information to uint8 gray scale and inpaints it
+	start_time = time.time()
 	#img=img/255.
 	mask = img.copy()
 	z_max = np.max(img)
-	img = ((img/z_max)*255).astype('uint8')
+	img = (np.divide(img,z_max)*255).astype('uint8')
 	mask[mask==0]= 1
 	mask[mask>1] = 0
 	mask[mask>1] = 255
@@ -66,7 +69,8 @@ def fill_holes(img,inpaint=0):
 	else:
 		processed_depth = cv2.inpaint(img,mask,3,cv2.INPAINT_TELEA)
  	#dst_TELEA_inpainted=equalize_hist(dst_TELEA_inpainted)
- 	real_depth = (processed_depth/255)*z_max
+ 	real_depth = np.divide(processed_depth,255)*z_max
+ 	print("--- %s seconds processing depth frame---" % (time.time() - start_time))
 	return processed_depth,mask, real_depth
 
 
@@ -78,8 +82,8 @@ if __name__ == '__main__':
 	RGB_sample = '../Test_samples/frame-000050.color.jpg'
 	rgb_im = Image.open(RGB_sample)
 	depth = read_depth(depth_sample)
-	processed_depth,mask,real_depth = fill_holes(depth,1)
-	processed_depth_new,mask_new, real_depth = fill_holes(depth,0)
+	processed_depth,mask,real_depth = process_depth(depth,1)
+	processed_depth_new,mask_new, real_depth = process_depth(depth,0)
 	# Invertim prop de lluny
 	#depth = 65535 - depth
 	f, axarr = pyplot.subplots(2, 2)
