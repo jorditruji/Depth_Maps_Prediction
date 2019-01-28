@@ -118,6 +118,8 @@ if __name__ == '__main__':
     net.double()
     net.cuda()
     p,aux = net(rgb_im.double().cuda())
+    p = p.detach().numpy()
+    aux = aux.detach().numpy()
     print(p.shape,np.unique(p))
     print(aux.shape,np.unique(aux))
 
