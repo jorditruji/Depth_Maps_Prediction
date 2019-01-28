@@ -7,7 +7,7 @@ import extractors
 
 class PSPModule(nn.Module):
     def __init__(self, features, out_features=1024, sizes=(1, 2, 3, 6)):
-        super().__init__()
+        super(PSPModule,self).__init__()
         self.stages = []
         self.stages = nn.ModuleList([self._make_stage(features, size) for size in sizes])
         self.bottleneck = nn.Conv2d(features * (len(sizes) + 1), out_features, kernel_size=1)
