@@ -122,4 +122,6 @@ if __name__ == '__main__':
     aux = aux.cpu().detach().numpy()
     print(p.shape,np.unique(p))
     print(aux.shape,np.unique(aux))
+    np.save('p',p)
+    np.save('aux',aux)
 
