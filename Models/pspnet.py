@@ -117,5 +117,7 @@ if __name__ == '__main__':
     print(rgb_im.size())
     net.double()
     net.cuda()
-    net(rgb_im.double().cuda())
+    p,aux = net(rgb_im.double().cuda())
+    print(p.shape,np.unique(p))
+    print(aux.shape,np.unique(aux))
 
