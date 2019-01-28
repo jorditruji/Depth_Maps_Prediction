@@ -1,7 +1,8 @@
+from __future__import division
+
 import torch
 from torch import nn
 from torch.nn import functional as F
-
 import extractors
 
 
@@ -65,8 +66,6 @@ class PSPNet(nn.Module):
         )
 
     def forward(self, x):
-        print("divided",x/256)
-        x=x/256
         f, class_f = self.feats(x) 
         p = self.psp(f)
         p = self.drop_1(p)
@@ -110,6 +109,7 @@ if __name__ == '__main__':
     rgb_im = np.swapaxes(rgb_im,0,-1)
     rgb_im = np.swapaxes(rgb_im,-2,-1)
     rgb_im = np.expand_dims(rgb_im,0)
+    rgb_im=(rgb_im-127)/28
     print(np.shape(rgb_im))
     rgb_im = torch.from_numpy(rgb_im)
     rgb_im
