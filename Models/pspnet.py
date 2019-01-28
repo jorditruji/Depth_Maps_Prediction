@@ -112,7 +112,8 @@ if __name__ == '__main__':
     rgb_im = np.expand_dims(rgb_im,0)
     print(np.shape(rgb_im))
     rgb_im = torch.from_numpy(rgb_im)
+    rgb_im
     print(type(rgb_im))
     print(rgb_im.size())
-    net(rgb_im)
+    net(rgb_im.double())
 
