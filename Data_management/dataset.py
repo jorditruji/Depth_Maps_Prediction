@@ -4,7 +4,7 @@ from torch.utils import data
 import numpy as np
 import time
 from skimage import io, transform
-from depth_preprocessing import read_depth
+from depth_preprocessing import read_depth, process_depth
 
 
 class Dataset(data.Dataset):
@@ -33,17 +33,18 @@ class Dataset(data.Dataset):
 
     def depth2RGB(self):
         '''Edit strings to match rgb paths'''
-        return [depth.replace('depth.pgm','color.jpg ') for depth in self.depth_frames]
+        return [depth.replace('depth.pgm','color.jpg') for depth in self.depth_frames]
 
 
-    def read_jpg(file):
+    def read_jpg(self,file):
         '''Read and preprocess pgm depth map'''
         return io.imread(file)
 
 if __name__ == '__main__':
     # Testing:
     # Sample data
-    depths = ['/projects/world3d/2017-06-scannet/scene0289_01/frame-000525.depth.pgm', '/projects/world3d/2017-06-scannet/scene0289_01/frame-000825.depth.pgm', '/projects/world3d/2017-06-scannet/scene0289_01/frame-000750.depth.pgm', '/projects/world3d/2017-06-scannet/scene0289_01/frame-000800.depth.pgm', '/projects/world3d/2017-06-scannet/scene0289_01/frame-001000.depth.pgm', '/projects/world3d/2017-06-scannet/scene0289_01/frame-000850.depth.pgm', '/projects/world3d/2017-06-scannet/scene0289_01/frame-001075.depth.pgm', '/projects/world3d/2017-06-scannet/scene0289_01/frame-000650.depth.pgm', '/projects/world3d/2017-06-scannet/scene0289_01/frame-000025.depth.pgm', '/projects/world3d/2017-06-scannet/scene0289_01/frame-000575.depth.pgm']
+    from matplotlib import pyplot
+    depths = ['../Test_samples/frame-000000.depth.pgm','../Test_samples/frame-000025.depth.pgm','../Test_samples/frame-000050.depth.pgm','../Test_samples/frame-000075.depth.pgm']
     dataset = Dataset(depths)
 
     print("Testing depth2RGB")
@@ -51,5 +52,20 @@ if __name__ == '__main__':
     print("Translated '{}' for '{}'").format(depths[0].split('/')[-1],rgb_frames[0].split('/')[-1])
 
     # Test depth reader
-
+    depth = read_depth(depths[-1])
+    processed_depth, mask, real_depth = process_depth(depth,1)
     # Test jpg reader
+    rgb = dataset.read_jpg(rgb_frames[-1])
+
+    #Plot results
+    f, axarr = pyplot.subplots(2, 2)
+    axarr[0,0].imshow(depth, 'gray', interpolation='nearest')
+    axarr[0,0].set_title('Original depth')
+    axarr[0,1].imshow(rgb)
+    axarr[0,1].set_title('Original RGB')
+    axarr[1,0].imshow(processed_depth,'gray', interpolation='nearest')
+    axarr[1,0].set_title('Navier Stokes Impaint')
+    axarr[1,1].imshow(np.squeeze(mask),'gray', interpolation='nearest')
+    axarr[1,1].set_title('MASK')
+    pyplot.show()
+    print "Finished tests"

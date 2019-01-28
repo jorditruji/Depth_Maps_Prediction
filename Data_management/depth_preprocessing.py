@@ -57,7 +57,9 @@ def process_depth(img,inpaint=0):
 	#img=img/255.
 	mask = img.copy()
 	z_max = np.max(img)
-	img = (np.divide(img,z_max)*255).astype('uint8')
+
+	img = ((img/z_max)*255).astype('uint8')
+
 	mask[mask==0]= 1
 	mask[mask>1] = 0
 	mask[mask>1] = 255
@@ -68,10 +70,11 @@ def process_depth(img,inpaint=0):
 		processed_depth = cv2.inpaint(img,mask,3,cv2.INPAINT_NS)
 	else:
 		processed_depth = cv2.inpaint(img,mask,3,cv2.INPAINT_TELEA)
+
  	#dst_TELEA_inpainted=equalize_hist(dst_TELEA_inpainted)
- 	real_depth = np.divide(processed_depth,255)*z_max
+ 	real_depth = (processed_depth/255)*z_max
  	print("--- %s seconds processing depth frame---" % (time.time() - start_time))
-	return processed_depth,mask, real_depth
+	return processed_depth, mask, real_depth
 
 
 
