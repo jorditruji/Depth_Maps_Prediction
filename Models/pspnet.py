@@ -115,5 +115,8 @@ if __name__ == '__main__':
     rgb_im
     print(type(rgb_im))
     print(rgb_im.size())
+    net.double()
+    net.cuda()
+    rgb_im.cuda()
     net(rgb_im.double())
 
