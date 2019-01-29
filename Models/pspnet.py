@@ -1,5 +1,4 @@
 from __future__ import division
-
 import torch
 from torch import nn
 from torch.nn import functional as F
@@ -55,10 +54,10 @@ class PSPNet(nn.Module):
 
         self.drop_2 = nn.Dropout2d(p=0.15)
         self.final = nn.Sequential(
-            nn.Conv2d(64, n_classes, kernel_size=1),
-            nn.LogSoftmax()
+            nn.Conv2d(64, n_classes, kernel_size=1)
+            #nn.LogSoftmax()
         )
-
+        # No em fa falta per fer refressio
         self.classifier = nn.Sequential(
             nn.Linear(deep_features_size, 256),
             nn.ReLU(),
@@ -81,7 +80,7 @@ class PSPNet(nn.Module):
 
         auxiliary = F.adaptive_max_pool2d(input=class_f, output_size=(1, 1)).view(-1, class_f.size(1))
 
-        return self.final(p), self.classifier(auxiliary)
+        return self.final(p)#, self.classifier(auxiliary) Not needed for refression
 
 
 
