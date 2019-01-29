@@ -3,10 +3,13 @@ from __future__ import division
 import cv2
 from read_pgm_depth import NetpbmFile
 import numpy as np
-from matplotlib import pyplot
 from itertools import product
 import time
 from PIL import Image
+
+'Contains the preprocessing functions of the depth maps like inpainting'
+
+
 
 def equalize_hist(img):
 	equ = cv2.equalizeHist(img)
@@ -81,6 +84,10 @@ def process_depth(img,inpaint=0):
 
 
 if __name__ == '__main__':
+
+	# Tests
+	from matplotlib import pyplot
+
 	depth_sample = '../Test_samples/frame-000050.depth.pgm'
 	RGB_sample = '../Test_samples/frame-000050.color.jpg'
 	rgb_im = Image.open(RGB_sample)

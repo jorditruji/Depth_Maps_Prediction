@@ -2,6 +2,11 @@ from glob import glob
 from random import shuffle
 import numpy as np
 
+
+'One use script to create the dataset partitions and store them in dataset.npy'
+
+
+
 def read_scenes(path):
 	# Reads all scenes (folders) of the dataset
 	return glob(path+'*/')

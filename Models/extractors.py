@@ -9,6 +9,10 @@ from torchvision.models.densenet import densenet121, densenet161
 from torchvision.models.squeezenet import squeezenet1_1
 
 
+'Feature extractors with weights to initialize pspnet extractor'
+
+
+
 def load_weights_sequential(target, source_state):
     new_dict = OrderedDict()
     for (k1, v1), (k2, v2) in zip(target.state_dict().items(), source_state.items()):

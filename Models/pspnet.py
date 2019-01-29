@@ -5,6 +5,16 @@ from torch.nn import functional as F
 import extractors
 
 
+'Contains the implementation of PSPNet developed by https://github.com/Lextal/pspnet-pytorch '
+'The implementation of the available feature extractors can be found at extractors.py'
+'''
+Changes: 
+1- Parent class initializations adpted to py2.7 style for image servers
+2- Deleted final classificator for 2ndary segmentation loss
+3- Deleted Logsoftmax from final layer
+
+'''
+
 class PSPModule(nn.Module):
     def __init__(self, features, out_features=1024, sizes=(1, 2, 3, 6)):
         super(PSPModule,self).__init__()
@@ -78,7 +88,7 @@ class PSPNet(nn.Module):
         p = self.up_3(p)
         p = self.drop_2(p)
 
-        auxiliary = F.adaptive_max_pool2d(input=class_f, output_size=(1, 1)).view(-1, class_f.size(1))
+        #auxiliary = F.adaptive_max_pool2d(input=class_f, output_size=(1, 1)).view(-1, class_f.size(1))
 
         return self.final(p)#, self.classifier(auxiliary) Not needed for refression
 
