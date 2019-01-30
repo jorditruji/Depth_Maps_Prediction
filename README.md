@@ -13,7 +13,8 @@ scikit-learn==0.20.0
 scipy==1.1.0
 sklearn==0.0
 subprocess32==3.5.2
-testpath==0.4.2
+testpath==0.4.2 
+
 torch==0.4.0
 torchvision==0.2.1
 tornado==5.1.1
