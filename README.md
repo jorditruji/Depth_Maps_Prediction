@@ -3,7 +3,7 @@ Different deep learning approaches to estimate RGB image depth at pixel level
 
 
 ## Requirements:
-
+'''
 decorator==4.3.0
 matplotlib==2.2.2
 numpy==1.14.5
@@ -20,4 +20,4 @@ tornado==5.1.1
 tqdm==4.28.1
 Unidecode==1.0.22
 urllib3==1.24.1
-
+'''
