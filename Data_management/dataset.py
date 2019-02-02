@@ -3,20 +3,27 @@ import torch
 from torch.utils import data
 import numpy as np
 import time
-from skimage import io, transform
 from depth_preprocessing import read_depth, process_depth
-
+from torchvision import transforms
+from PIL import Image
+import torch.nn as nn
+import torch.nn.functional as F
 
 class Dataset(data.Dataset):
     """
     Class Dataset:
     - Parameters:
-        list_IDs: Vector of depth image paths
+        depth_names: Vector of depth image paths
     """
     def __init__(self, depth_names):
         # Paths to dataset samples
         self.depth_frames = depth_names
         self.RGB_frames = self.depth2RGB()
+        self.RGB_transforms = transforms.Compose([transforms.ColorJitter()
+                                                ,transforms.ToTensor()
+                                                 #Need to means and stds
+                                                 #,transforms.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225])
+                                                ])
 
     def __len__(self):
         '''Denotes the total number of samples'''
@@ -31,14 +38,43 @@ class Dataset(data.Dataset):
         rgb = self.read_jpg(self.RGB_frames[index])
         return depth, RGB
 
+
     def depth2RGB(self):
         '''Edit strings to match rgb paths'''
         return [depth.replace('depth.pgm','color.jpg') for depth in self.depth_frames]
 
 
     def read_jpg(self,file):
-        '''Read and preprocess pgm depth map'''
-        return io.imread(file)
+        '''Read and preprocess rgb frame'''
+        # open path as file to avoid ResourceWarning (https://github.com/python-pillow/Pillow/issues/835)
+        with open(file, 'rb') as f:
+            img = Image.open(f).convert('RGB')
+        img = self.RGB_transforms(img)
+        return img
+
+    def imgrad(self,img):
+        ''' Returns sobel gradient '''
+        #Black and white input image x, 1x1xHxW
+        a = torch.Tensor([[1, 0, -1],
+        [2, 0, -2],
+        [1, 0, -1]])
+
+        a = a.view((1,1,3,3))
+
+        print (img, a)
+        G_x = F.conv2d(img, a)
+
+        b = torch.Tensor([[1, 2, 1],
+        [0, 0, 0],
+        [-1, -2, -1]])
+
+        b = b.view((1,1,3,3))
+        G_y = F.conv2d(img, b)
+
+        G = torch.sqrt(torch.pow(G_x,2)+ torch.pow(G_y,2))
+
+        return G
+
 
 if __name__ == '__main__':
     # Testing:
@@ -49,7 +85,7 @@ if __name__ == '__main__':
 
     print("Testing depth2RGB")
     rgb_frames = dataset.depth2RGB()
-    print("Translated '{}' for '{}'").format(depths[0].split('/')[-1],rgb_frames[0].split('/')[-1])
+    print("Translated '{}' for '{}'".format(depths[0].split('/')[-1],rgb_frames[0].split('/')[-1]))
 
     # Test depth reader
     depth = read_depth(depths[-1])
@@ -57,6 +93,11 @@ if __name__ == '__main__':
     # Test jpg reader
     rgb = dataset.read_jpg(rgb_frames[-1])
 
+
+    # Matplotlib style display = channels last
+    rgb= np.swapaxes(rgb.numpy(),0,-1)
+    rgb = np.swapaxes(rgb,0,1)
+    print rgb.shape
     #Plot results
     f, axarr = pyplot.subplots(2, 2)
     axarr[0,0].imshow(depth, 'gray', interpolation='nearest')
@@ -65,7 +106,11 @@ if __name__ == '__main__':
     axarr[0,1].set_title('Original RGB')
     axarr[1,0].imshow(processed_depth,'gray', interpolation='nearest')
     axarr[1,0].set_title('Navier Stokes Impaint')
+
+
+    # Test depth_gradient:
+    #gradient = dataset.imgrad(depth)
     axarr[1,1].imshow(np.squeeze(mask),'gray', interpolation='nearest')
-    axarr[1,1].set_title('MASK')
+    axarr[1,1].set_title('Gradients Sobel')
     pyplot.show()
-    print "Finished tests"
+    print("Finished tests")

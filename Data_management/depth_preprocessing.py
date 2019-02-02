@@ -49,7 +49,6 @@ def process_depth_TFG(img):
 
 	dst_TELEA = cv2.inpaint(norm_img,mask,3,cv2.INPAINT_TELEA)
 	#dst_TELEA=equalize_hist(dst_TELEA)
-	print np.unique(mask)
 
 	return (dst_TELEA-255)*-1,mask
 		
@@ -74,9 +73,9 @@ def process_depth(img,inpaint=0):
 	else:
 		processed_depth = cv2.inpaint(img,mask,3,cv2.INPAINT_TELEA)
 
- 	#dst_TELEA_inpainted=equalize_hist(dst_TELEA_inpainted)
- 	real_depth = (processed_depth/255)*z_max
- 	print("--- %s seconds processing depth frame---" % (time.time() - start_time))
+	#dst_TELEA_inpainted=equalize_hist(dst_TELEA_inpainted)
+	real_depth = (processed_depth/255)*z_max
+	print("--- %s seconds processing depth frame---" % (time.time() - start_time))
 	return processed_depth, mask, real_depth
 
 
