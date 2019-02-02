@@ -48,8 +48,11 @@ for sample,depth in zip(dataset.RGB_frames,dataset.depth_frames):
 	means.append(np.mean(val,axis=0))
 	stds.append(np.std(val,axis=0))
 	depth_img = read_depth(depth)
-	max_depth.append( np.max(depth_img))
-	min_depth.append(np.min(depth_img[depth_img>0]))
+	try:
+		max_depth.append(np.max(depth_img))
+		min_depth.append(np.min(depth_img[depth_img>0]))
+	except:
+		print("failes")
 
 means = np.array(means)
 stds = np.array(stds)
