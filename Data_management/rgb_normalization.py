@@ -3,7 +3,7 @@ from dataset import Dataset
 import numpy as np
 from PIL import Image
 from depth_preprocessing import read_depth
-
+import sys
 
 # Print iterations progress
 def print_progress(iteration, total, prefix='', suffix='', decimals=2, bar_length=40):
