@@ -41,16 +41,16 @@ cont = 1
 for sample,depth in zip(dataset.RGB_frames,dataset.depth_frames):
 	printProgressBar(count_progress+1, total, prefix='Progress:', suffix='Complete', length=50)
 	cont+=1
-    with open(sample, 'rb') as f:
-        img = Image.open(f).convert('RGB')
-    img = np.asarray(img)
-    width_ ,height, n_channels = img.shape
-    val = img.reshape(width_*height,n_channels)
-    means.append(np.mean(val,axis=0))
-    stds.append(np.std(val,axis=0))
-    depth_img = read_depth(depth)
-    max_depth.append( np.max(depth_img))
-    min_depth.append(np.min(depth_img[depth_img>0]))
+	with open(sample, 'rb') as f:
+		img = Image.open(f).convert('RGB')
+	img = np.asarray(img)
+	width_ ,height, n_channels = img.shape
+	val = img.reshape(width_*height,n_channels)
+	means.append(np.mean(val,axis=0))
+	stds.append(np.std(val,axis=0))
+	depth_img = read_depth(depth)
+	max_depth.append( np.max(depth_img))
+	min_depth.append(np.min(depth_img[depth_img>0]))
 
 means = np.array(means)
 stds = np.array(stds)
