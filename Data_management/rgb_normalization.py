@@ -35,11 +35,10 @@ stds = []
 max_depth = []
 min_depth = []
 dataset = Dataset(train_dict)
-print_progress(count_progress+1, len(labels), prefix='Progress:', suffix='Complete', length=50)
 total = len(train_dict)
 cont = 1
 for sample,depth in zip(dataset.RGB_frames,dataset.depth_frames):
-	print_progress(count_progress+1, total, prefix='Progress:', suffix='Complete', length=50)
+	print_progress(cont, total, prefix='Progress:', suffix='Complete', length=50)
 	cont+=1
 	with open(sample, 'rb') as f:
 		img = Image.open(f).convert('RGB')
