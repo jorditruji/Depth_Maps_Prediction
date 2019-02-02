@@ -13,6 +13,7 @@ stds = []
 max_depth = []
 min_depth = []
 dataset = Dataset(train_dict)
+
 for sample,depth in zip(dataset.RGB_frames,dataset.depth_frames):
     with open(sample, 'rb') as f:
         img = Image.open(f).convert('RGB')
