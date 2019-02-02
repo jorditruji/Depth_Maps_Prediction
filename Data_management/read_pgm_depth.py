@@ -148,7 +148,6 @@ class NetpbmFile(object):
 
         self._fh.seek(0)
         data = self._fh.read(4096)
-        print(data)
         if len(data) < 7 or data[:2] not in self._types:
             raise ValueError('Not a Netpbm file:\n%s' % data[:32])
         if data[:2] in (b'PF', b'Pf'):
