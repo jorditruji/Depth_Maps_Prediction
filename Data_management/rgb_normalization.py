@@ -38,7 +38,7 @@ dataset = Dataset(train_dict)
 total = len(train_dict)
 cont = 1
 for sample,depth in zip(dataset.RGB_frames,dataset.depth_frames):
-	print_progress(cont, total, prefix='Progress:', suffix='Complete', length=50)
+	print_progress(cont, total, prefix='Progress:', suffix='Complete', bar_length=50)
 	cont+=1
 	with open(sample, 'rb') as f:
 		img = Image.open(f).convert('RGB')
