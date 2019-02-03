@@ -62,10 +62,13 @@ means = np.array(means)
 stds = np.array(stds)
 
 print means.shape
-global_mean = np.mean(means,axis = 0)
-global_std = np.mean(stds,axis = 0)
+global_mean = np.mean(means,axis = 1)
+global_std = np.mean(stds,axis = 1)
 
 max_save = np.max(max_depth)
+
+print max_save, max_depth
+
 min_save = np.min(min_depth)
 
 
