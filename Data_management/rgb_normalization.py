@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+from __future__ import division
 from dataset import Dataset
 import numpy as np
 from PIL import Image
@@ -51,12 +52,16 @@ for sample,depth in zip(dataset.RGB_frames,dataset.depth_frames):
 	try:
 		max_depth.append(np.max(depth_img))
 		min_depth.append(np.min(depth_img[depth_img>0]))
+		print np.mean(val,axis=0),np.max(depth_img),np.min(depth_img[depth_img>0])
 	except:
 		print("failes")
+	if cont>10:
+		break
 
 means = np.array(means)
 stds = np.array(stds)
 
+print means.shape
 global_mean = np.mean(means,axis = 0)
 global_std = np.mean(stds,axis = 0)
 

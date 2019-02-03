@@ -20,7 +20,7 @@ def read_depth(file):
 	try:
 		with NetpbmFile(file) as pam:
 			img = pam.asarray(copy=False)
-			print("--- %s seconds reading depth frame---" % (time.time() - start_time))
+			#print("--- %s seconds reading depth frame---" % (time.time() - start_time))
 			return img
 
 	except ValueError as e:

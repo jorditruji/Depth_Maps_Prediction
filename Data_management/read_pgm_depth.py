@@ -368,7 +368,6 @@ def main(argv=None):
         try:
             with NetpbmFile(fname) as pam:
                 img = pam.asarray(copy=False)
-                print(numpy.max(img))
                 if False:  # enable for testing
                     pam.write('_tmp.pgm.out', pam=True)
                     img2 = imread('_tmp.pgm.out')
@@ -397,7 +396,6 @@ def main(argv=None):
             img = img.astype('uint8')
         
         img=img/256
-        print(numpy.unique(img))
         pyplot.imshow(img, cmap, interpolation='nearest')
         pyplot.title('"%s %s %s %s' % (fname, unicode(pam.magicnum),
                                        shape, img.dtype))
