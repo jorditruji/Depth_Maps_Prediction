@@ -48,14 +48,15 @@ for sample,depth in zip(dataset.RGB_frames,dataset.depth_frames):
 	val = img.reshape(width_*height,n_channels)
 	means.append(np.mean(val,axis=0))
 	stds.append(np.std(val,axis=0))
+	if cont==1:
+		print means, stds
 	depth_img = read_depth(depth)
 	try:
 		max_depth.append(np.max(depth_img))
 		min_depth.append(np.min(depth_img[depth_img>0]))
 	except:
 		print("failes")
-	if cont>10:
-		break
+
 
 means = np.array(means)
 stds = np.array(stds)
