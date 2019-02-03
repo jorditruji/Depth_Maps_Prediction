@@ -52,7 +52,6 @@ for sample,depth in zip(dataset.RGB_frames,dataset.depth_frames):
 	try:
 		max_depth.append(np.max(depth_img))
 		min_depth.append(np.min(depth_img[depth_img>0]))
-		print np.mean(val,axis=0),np.max(depth_img),np.min(depth_img[depth_img>0])
 	except:
 		print("failes")
 	if cont>10:
