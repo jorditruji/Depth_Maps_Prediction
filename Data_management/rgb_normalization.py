@@ -30,12 +30,13 @@ def print_progress(iteration, total, prefix='', suffix='', decimals=2, bar_lengt
 	sys.stdout.flush()
 
 train_dict = np.load('dataset.npy').item()['train']
-
+test =['../Test_samples/frame-000000.depth.pgm','../Test_samples/frame-000025.depth.pgm','../Test_samples/frame-000050.depth.pgm','../Test_samples/frame-000075.depth.pgm']
+    
 means = []
 stds = []
 max_depth = []
 min_depth = []
-dataset = Dataset(train_dict)
+dataset = Dataset(test)
 total = len(train_dict)
 cont = 1
 for sample,depth in zip(dataset.RGB_frames,dataset.depth_frames):
@@ -48,31 +49,33 @@ for sample,depth in zip(dataset.RGB_frames,dataset.depth_frames):
 	val = img.reshape(width_*height,n_channels)
 	means.append(np.mean(val,axis=0))
 	stds.append(np.std(val,axis=0))
-	if cont==1:
-		print means, stds
 	depth_img = read_depth(depth)
 	try:
 		max_depth.append(np.max(depth_img))
-		min_depth.append(np.min(depth_img[depth_img>0]))
+		min_depth.append(np.amin(depth_img[depth_img>0]))
 	except:
 		print("failes")
+	if cont==7:
+		break
 
 
 means = np.array(means)
 stds = np.array(stds)
 
-print means.shape
-global_mean = np.mean(means,axis = 1)
-global_std = np.mean(stds,axis = 1)
+global_mean = np.mean(means,axis = 0)
+global_std = np.mean(stds,axis = 0)
 
 max_save = np.max(max_depth)
 
-print max_save, max_depth
 
 min_save = np.min(min_depth)
 
+print "Max:{}".format(max_save)
+print "Min: {}".format(min_save)
+print "Mean: {}".format(global_mean)
+print "Std: {}".format(global_std)
 
 np.save ('means',global_mean)
 np.save ('stds',global_std)
 np.save ('max_save',max_save)
-np.save ('means',min_save)
+np.save ('min_save',min_save)
