@@ -43,7 +43,7 @@ for sample,depth in zip(dataset.RGB_frames,dataset.depth_frames):
 	cont+=1
 	with open(sample, 'rb') as f:
 		img = Image.open(f).convert('RGB')
-	img = np.asarray(img)
+	img = np.asarray(img/256)
 	width_ ,height, n_channels = img.shape
 	val = img.reshape(width_*height,n_channels)
 	means.append(np.mean(val,axis=0))
