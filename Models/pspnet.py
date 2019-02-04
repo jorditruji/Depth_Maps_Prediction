@@ -2,7 +2,7 @@ from __future__ import division
 import torch
 from torch import nn
 from torch.nn import functional as F
-import extractors
+from . import extractors
 
 
 'Contains the implementation of PSPNet developed by https://github.com/Lextal/pspnet-pytorch '

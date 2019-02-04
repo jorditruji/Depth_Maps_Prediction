@@ -3,7 +3,7 @@ import torch
 from torch.utils import data
 import numpy as np
 import time
-from depth_preprocessing import read_depth, process_depth
+from .depth_preprocessing import read_depth, process_depth
 from torchvision import transforms
 from PIL import Image
 import torch.nn as nn
@@ -126,7 +126,6 @@ if __name__ == '__main__':
 
     # Matplotlib style display = channels last
     rgb= np.swapaxes(rgb.numpy(),0,-1)
-    print np.max(rgb)
     print(rgb.shape)
     rgb = np.swapaxes(rgb,0,1)
     print(rgb.shape)
@@ -144,7 +143,6 @@ if __name__ == '__main__':
     # Test depth_gradient:
     gradient = dataset.imgrad(processed_depth)
     gradient = gradient.data.numpy()
-    print np.unique(gradient)
     axarr[1,1].imshow(5*np.squeeze(gradient)/np.max(gradient),'gray', interpolation='nearest')
     axarr[1,1].set_title('Gradients Sobel')
     pyplot.show()
