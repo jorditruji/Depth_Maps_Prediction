@@ -16,16 +16,17 @@ class Dataset(data.Dataset):
     - Parameters:
         depth_names: Vector of depth image paths
     """
-    def __init__(self, depth_names):
+    def __init__(self, depth_names, train = True):
         # Paths to dataset samples
+
         self.depth_frames = depth_names
         self.RGB_frames = self.depth2RGB()
-        self.RGB_transforms = transforms.Compose([transforms.Resize((640,480))
+        self.RGB_transforms_train = transforms.Compose([transforms.Resize((480,640))
                                                 ,transforms.ColorJitter()
                                                 ,transforms.ToTensor()
                                                 
                                                  #Need to means and stds
-                                                 #,transforms.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225])
+                                                 ,transforms.Normalize([0.4944742, 0.4425867, 0.38153833], [0.23055981, 0.22284868, 0.21425385])
                                                 ])
         self.depth_transforms = transforms.Compose([transforms.ToTensor()
                                                  #Need to means and stds
@@ -43,7 +44,7 @@ class Dataset(data.Dataset):
         # Select sample
         depth = read_depth(self.depth_frames[index])
         depth,_a,_b = process_depth(depth)
-        rgb = self.read_jpg(self.RGB_frames[index])
+        rgb = self.read_jpg_train(self.RGB_frames[index])
         depth= self.depth_transforms(np.expand_dims(depth,0))
         depth = depth.permute(1,0,2)
         return depth, rgb
@@ -54,12 +55,21 @@ class Dataset(data.Dataset):
         return [depth.replace('depth.pgm','color.jpg') for depth in self.depth_frames]
 
 
+    def read_jpg_train(self,file):
+        '''Read and preprocess rgb frame'''
+        # open path as file to avoid ResourceWarning (https://github.com/python-pillow/Pillow/issues/835)
+        with open(file, 'rb') as f:
+            img = Image.open(f).convert('RGB')
+
+        img = self.RGB_transforms_train(img)
+        return img
+
+
     def read_jpg(self,file):
         '''Read and preprocess rgb frame'''
         # open path as file to avoid ResourceWarning (https://github.com/python-pillow/Pillow/issues/835)
         with open(file, 'rb') as f:
             img = Image.open(f).convert('RGB')
-        img = self.RGB_transforms(img)
         return img
 
     def imgrad(self,img):
@@ -67,18 +77,18 @@ class Dataset(data.Dataset):
         #Black and white input image x, 1x1xHxW
 
         #Uncomment for testing
-        '''
+        
         img = torch.Tensor(img/256)
         img.unsqueeze_(0)
         img.unsqueeze_(0)
-        '''
+        
         img = Variable(img)
         a = torch.Tensor([[1, 0, -1],
                         [2, 0, -2],
                         [1, 0, -1]])
         a = a.view((1,1,3,3))
 
-        print (img, a)
+        print (img.size())
         a = Variable(a)
         G_x = F.conv2d(img, a)
 
@@ -106,21 +116,27 @@ if __name__ == '__main__':
     print("Translated '{}' for '{}'".format(depths[0].split('/')[-1],rgb_frames[0].split('/')[-1]))
 
     # Test depth reader
-    depth = read_depth(depths[1])
+    depth = read_depth(depths[-1])
     processed_depth, mask, real_depth = process_depth(depth,1)
     # Test jpg reader
-    rgb = dataset.read_jpg(rgb_frames[1])
+    rgb = dataset.read_jpg_train(rgb_frames[-1])
+    rgb_2 = dataset.read_jpg(rgb_frames[-1])
+    print(rgb.size())
 
 
     # Matplotlib style display = channels last
     rgb= np.swapaxes(rgb.numpy(),0,-1)
+    print np.max(rgb)
+    print(rgb.shape)
     rgb = np.swapaxes(rgb,0,1)
+    print(rgb.shape)
+
     #Plot results
     f, axarr = pyplot.subplots(2, 2)
-    axarr[0,0].imshow(depth, 'gray', interpolation='nearest')
-    axarr[0,0].set_title('Original depth')
+    axarr[0,0].imshow(rgb_2)#, 'gray', interpolation='nearest')
+    axarr[0,0].set_title('Original RGB')
     axarr[0,1].imshow(rgb)
-    axarr[0,1].set_title('Original RGB')
+    axarr[0,1].set_title('Processed RGB')
     axarr[1,0].imshow(processed_depth,'gray', interpolation='nearest')
     axarr[1,0].set_title('Navier Stokes Impaint')
 
