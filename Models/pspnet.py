@@ -4,7 +4,6 @@ from torch import nn
 from torch.nn import functional as F
 from . import extractors
 
-
 'Contains the implementation of PSPNet developed by https://github.com/Lextal/pspnet-pytorch '
 'The implementation of the available feature extractors can be found at extractors.py'
 '''
@@ -12,12 +11,11 @@ Changes:
 1- Parent class initializations adpted to py2.7 style for image servers
 2- Deleted final classificator for 2ndary segmentation loss
 3- Deleted Logsoftmax from final layer
-
 '''
 
 class PSPModule(nn.Module):
     def __init__(self, features, out_features=1024, sizes=(1, 2, 3, 6)):
-        super().__init__()
+        super(PSPModule,self).__init__()
         self.stages = []
         self.stages = nn.ModuleList([self._make_stage(features, size) for size in sizes])
         self.bottleneck = nn.Conv2d(features * (len(sizes) + 1), out_features, kernel_size=1)
@@ -37,7 +35,7 @@ class PSPModule(nn.Module):
 
 class PSPUpsample(nn.Module):
     def __init__(self, in_channels, out_channels):
-        super().__init__()
+        super(PSPUpsample,self).__init__()
         self.conv = nn.Sequential(
             nn.Conv2d(in_channels, out_channels, 3, padding=1),
             nn.BatchNorm2d(out_channels),
@@ -51,9 +49,9 @@ class PSPUpsample(nn.Module):
 
 
 class PSPNet(nn.Module):
-    def __init__(self, n_classes=18, sizes=(1, 2, 3, 6), psp_size=2048, deep_features_size=1024, backend='resnet34',
+    def __init__(self, n_classes=1, sizes=(1, 2, 3, 6), psp_size=2048, deep_features_size=1024, backend='resnet34',
                  pretrained=True):
-        super().__init__()
+        super(PSPNet, self).__init__()
         self.feats = getattr(extractors, backend)(pretrained)
         self.psp = PSPModule(psp_size, 1024, sizes)
         self.drop_1 = nn.Dropout2d(p=0.3)
@@ -64,10 +62,10 @@ class PSPNet(nn.Module):
 
         self.drop_2 = nn.Dropout2d(p=0.15)
         self.final = nn.Sequential(
-            nn.Conv2d(64, n_classes, kernel_size=1),
-            nn.LogSoftmax()
+            nn.Conv2d(64, n_classes, kernel_size=1)
+            #nn.LogSoftmax()
         )
-
+        # No em fa falta per fer refressio
         self.classifier = nn.Sequential(
             nn.Linear(deep_features_size, 256),
             nn.ReLU(),
@@ -88,9 +86,11 @@ class PSPNet(nn.Module):
         p = self.up_3(p)
         p = self.drop_2(p)
 
-        auxiliary = F.adaptive_max_pool2d(input=class_f, output_size=(1, 1)).view(-1, class_f.size(1))
+        #auxiliary = F.adaptive_max_pool2d(input=class_f, output_size=(1, 1)).view(-1, class_f.size(1))
 
-        return self.final(p), self.classifier(auxiliary)
+        return self.final(p)#, self.classifier(auxiliary) Not needed for refression
+
+
 
 if __name__ == '__main__':
     import numpy as np
@@ -131,4 +131,3 @@ if __name__ == '__main__':
     print(aux.shape,np.unique(aux))
     np.save('p',p)
     np.save('aux',aux)
-
