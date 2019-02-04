@@ -29,6 +29,7 @@ params = {'batch_size': 4,
         'num_workers': 8}
 training_generator = data.DataLoader(dataset,**params)
 net.train()
+print(net)
 
 optimizer_ft = optim.Adagrad(net.parameters(), lr=0.001, lr_decay=0)
 
