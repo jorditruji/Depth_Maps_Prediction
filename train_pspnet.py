@@ -34,7 +34,7 @@ optimizer_ft = optim.Adagrad(net.parameters(), lr=0.001, lr_decay=0)
 
 for a in range(150):
     for depths, rgbs in training_generator:
-        print depths.size(), rgbs.size()
+        print(depths.size(), rgbs.size())
         rgbs = Variable(rgbs)
         res = net(rgbs)
         print(res.size())
