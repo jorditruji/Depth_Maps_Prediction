@@ -37,8 +37,6 @@ for a in range(150):
     for depths, rgbs in training_generator:
         print(depths.size(), rgbs.size())
         rgbs = Variable(rgbs)
-        res = net(rgbs)
-        print(res.size())
-
+        
 
 

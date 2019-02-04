@@ -10,6 +10,13 @@ import torch.nn as nn
 import torch.nn.functional as F
 from torch.autograd import Variable
 
+
+'RECORDATORI SCANNET dataset: \
+Max depth(uint16): 9998 \
+Min depth(uint16) : 264 \
+Mean RGB: [0.4944742  0.4425867  0.38153833] \
+Std RGB: [0.23055981 0.22284868 0.21425385] '
+
 class Dataset(data.Dataset):
     """
     Class Dataset:
@@ -18,15 +25,17 @@ class Dataset(data.Dataset):
     """
     def __init__(self, depth_names, train = True):
         # Paths to dataset samples
-
+        self.train = train
         self.depth_frames = depth_names
         self.RGB_frames = self.depth2RGB()
         self.RGB_transforms_train = transforms.Compose([transforms.Resize((480,640))
                                                 ,transforms.ColorJitter()
-                                                ,transforms.ToTensor()
-                                                
-                                                 #Need to means and stds
-                                                 ,transforms.Normalize([0.4944742, 0.4425867, 0.38153833], [0.23055981, 0.22284868, 0.21425385])
+                                                ,transforms.ToTensor()                                                
+                                                ,transforms.Normalize([0.4944742, 0.4425867, 0.38153833], [0.23055981, 0.22284868, 0.21425385])
+                                                ])
+        self.RGB_transforms_test = transforms.Compose([transforms.Resize((480,640))
+                                                ,transforms.ToTensor()                                                
+                                                ,transforms.Normalize([0.4944742, 0.4425867, 0.38153833], [0.23055981, 0.22284868, 0.21425385])
                                                 ])
         self.depth_transforms = transforms.Compose([transforms.ToTensor()
                                                  #Need to means and stds
@@ -46,12 +55,13 @@ class Dataset(data.Dataset):
         depth,_a,_b = process_depth(depth)
         rgb = self.read_jpg_train(self.RGB_frames[index])
         depth= self.depth_transforms(np.expand_dims(depth,0))
-        depth = depth.permute(1,0,2)
+        # Format n_channel, H, Width
+        depth = depth.permute(1,2,0)
         return depth, rgb
 
 
     def depth2RGB(self):
-        '''Edit strings to match rgb paths'''
+        '''Edit strings to match rgb image paths'''
         return [depth.replace('depth.pgm','color.jpg') for depth in self.depth_frames]
 
 
@@ -60,8 +70,11 @@ class Dataset(data.Dataset):
         # open path as file to avoid ResourceWarning (https://github.com/python-pillow/Pillow/issues/835)
         with open(file, 'rb') as f:
             img = Image.open(f).convert('RGB')
-
-        img = self.RGB_transforms_train(img)
+        # Apply transforms depending on model status
+        if self.train:
+            img = self.RGB_transforms_train(img)
+        else:
+            img = self.RGB_transforms_test(img)
         return img
 
 
@@ -77,21 +90,25 @@ class Dataset(data.Dataset):
         #Black and white input image x, 1x1xHxW
 
         #Uncomment for testing
-        
+        '''
         img = torch.Tensor(img/256)
         img.unsqueeze_(0)
         img.unsqueeze_(0)
-        
+        '''
         img = Variable(img)
+        # Initializer sobel filters
         a = torch.Tensor([[1, 0, -1],
                         [2, 0, -2],
                         [1, 0, -1]])
-        a = a.view((1,1,3,3))
 
-        print (img.size())
+        # Add dims to fit batch_size, n_filters, filter shape
+        a = a.view((1,1,3,3))
         a = Variable(a)
+
+        # Filter horizontal contours
         G_x = F.conv2d(img, a)
 
+        # Repeat for vertical contours
         b = torch.Tensor([[1, 2, 1],
                         [0, 0, 0],
                         [-1, -2, -1]])
@@ -143,7 +160,7 @@ if __name__ == '__main__':
     # Test depth_gradient:
     gradient = dataset.imgrad(processed_depth)
     gradient = gradient.data.numpy()
-    axarr[1,1].imshow(5*np.squeeze(gradient)/np.max(gradient),'gray', interpolation='nearest')
+    axarr[1,1].imshow(np.squeeze(gradient)/np.max(gradient),'gray', interpolation='nearest')
     axarr[1,1].set_title('Gradients Sobel')
     pyplot.show()
     print("Finished tests")
