@@ -14,11 +14,8 @@ from torchvision.models.squeezenet import squeezenet1_1
 
 
 def load_weights_sequential(target, source_state):
-    new_dict = OrderedDict()
-    for (k1, v1), (k2, v2) in zip(target.state_dict().items(), source_state.items()):
-        new_dict[k1] = v2
-        print(k1,k2)
-    target.load_state_dict(new_dict)
+    model_to_load= {k: v for k, v in source_state.items() if k in target.state_dict().keys()}
+    target.load_state_dict(model_to_load)
 
 '''
     Implementation of dilated ResNet-101 with deep supervision. Downsampling is changed to 8x
@@ -338,9 +335,9 @@ def densenet(pretrained=True):
 
 def resnet18(pretrained=True):
     model = ResNet(BasicBlock, [2, 2, 2, 2])
-    
+
     if pretrained:
-        model.load_state_dict(model_zoo.load_url(model_urls['resnet18']))
+        load_weights_sequential(model, model_zoo.load_url(model_urls['resnet18']))
     return model
 
 
