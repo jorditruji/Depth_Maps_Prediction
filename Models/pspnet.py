@@ -17,7 +17,7 @@ Changes:
 
 class PSPModule(nn.Module):
     def __init__(self, features, out_features=1024, sizes=(1, 2, 3, 6)):
-        super(PSPModule,self).__init__()
+        super().__init__()
         self.stages = []
         self.stages = nn.ModuleList([self._make_stage(features, size) for size in sizes])
         self.bottleneck = nn.Conv2d(features * (len(sizes) + 1), out_features, kernel_size=1)
@@ -37,7 +37,7 @@ class PSPModule(nn.Module):
 
 class PSPUpsample(nn.Module):
     def __init__(self, in_channels, out_channels):
-        super(PSPUpsample,self).__init__()
+        super().__init__()
         self.conv = nn.Sequential(
             nn.Conv2d(in_channels, out_channels, 3, padding=1),
             nn.BatchNorm2d(out_channels),
