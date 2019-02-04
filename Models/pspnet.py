@@ -51,9 +51,9 @@ class PSPUpsample(nn.Module):
 
 
 class PSPNet(nn.Module):
-    def __init__(self, n_classes=1, sizes=(1, 2, 3, 6), psp_size=2048, deep_features_size=1024, backend='resnet34',
+    def __init__(self, n_classes=18, sizes=(1, 2, 3, 6), psp_size=2048, deep_features_size=1024, backend='resnet34',
                  pretrained=True):
-        super(PSPNet, self).__init__()
+        super().__init__()
         self.feats = getattr(extractors, backend)(pretrained)
         self.psp = PSPModule(psp_size, 1024, sizes)
         self.drop_1 = nn.Dropout2d(p=0.3)
@@ -64,10 +64,10 @@ class PSPNet(nn.Module):
 
         self.drop_2 = nn.Dropout2d(p=0.15)
         self.final = nn.Sequential(
-            nn.Conv2d(64, n_classes, kernel_size=1)
-            #nn.LogSoftmax()
+            nn.Conv2d(64, n_classes, kernel_size=1),
+            nn.LogSoftmax()
         )
-        # No em fa falta per fer refressio
+
         self.classifier = nn.Sequential(
             nn.Linear(deep_features_size, 256),
             nn.ReLU(),
@@ -88,11 +88,9 @@ class PSPNet(nn.Module):
         p = self.up_3(p)
         p = self.drop_2(p)
 
-        #auxiliary = F.adaptive_max_pool2d(input=class_f, output_size=(1, 1)).view(-1, class_f.size(1))
+        auxiliary = F.adaptive_max_pool2d(input=class_f, output_size=(1, 1)).view(-1, class_f.size(1))
 
-        return self.final(p)#, self.classifier(auxiliary) Not needed for refression
-
-
+        return self.final(p), self.classifier(auxiliary)
 
 if __name__ == '__main__':
     import numpy as np
