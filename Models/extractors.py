@@ -338,8 +338,9 @@ def densenet(pretrained=True):
 
 def resnet18(pretrained=True):
     model = ResNet(BasicBlock, [2, 2, 2, 2])
+    
     if pretrained:
-        load_weights_sequential(model, model_zoo.load_url(model_urls['resnet18']))
+        model.load_state_dict(model_zoo.load_url(model_urls['resnet18']))
     return model
 
 
