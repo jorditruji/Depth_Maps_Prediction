@@ -69,8 +69,7 @@ training_generator = data.DataLoader(dataset,**params)
 net.train()
 print(net)
 
-#Optimizer
-optimizer_ft = optim.Adagrad(net.parameters(), lr=0.001, lr_decay=0)
+
 
 
 # Loss
@@ -80,12 +79,13 @@ depth_criterion = RMSE()
 device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 print(device)
 net = net.to(device)
-net = net.cuda()
+#Optimizer
+optimizer_ft = optim.Adagrad(net.parameters(), lr=0.001, lr_decay=0)
 for a in range(500):
     for depths, rgbs in training_generator:
         # Get items from generator
-        outputs = depths.cuda()
-        inputs = rgbs.cuda()
+        outputs = depths.to(device)
+        inputs = rgbs.to(device)
 
         # Clean grads
         optimizer_ft.zero_grad()
