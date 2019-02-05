@@ -99,9 +99,6 @@ for a in range(500):
         depth_loss.backward()
         optimizer_ft.step()
 
-        # info
-        if step % 10 == 0:
 
-            print("[epoch %2d] loss: %.4f " \
-                % (epoch, depth_loss )
+        print("[epoch %2d] loss: %.4f " % (a, depth_loss ))
 
