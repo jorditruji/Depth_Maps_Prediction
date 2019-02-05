@@ -5,6 +5,45 @@ from torch.utils import data
 import numpy as np
 import torch.optim as optim
 from torch.autograd import Variable
+import torch.nn as nn
+
+
+#Losses:
+class RMSE_log(nn.Module):
+    def __init__(self):
+        super(RMSE_log, self).__init__()
+    
+    def forward(self, fake, real):
+        if not fake.shape == real.shape:
+            _,_,H,W = real.shape
+            fake = F.upsample(fake, size=(H,W), mode='bilinear')
+        print("Calculing loss")
+        print( torch.abs(torch.log(real)-torch.log(fake)) )
+        loss = torch.sqrt( torch.mean( torch.abs(torch.log(real)-torch.log(fake)) ** 2 ) )
+        return loss
+
+
+class RMSE(nn.Module):
+    def __init__(self):
+        super(RMSE, self).__init__()
+    
+    def forward(self, fake, real):
+        if not fake.shape == real.shape:
+            _,_,H,W = real.shape
+            fake = F.upsample(fake, size=(H,W), mode='bilinear')
+        loss = torch.sqrt( torch.mean( torch.abs(10.*real-10.*fake) ** 2 ) )
+        return loss
+
+
+class GradLoss(nn.Module):
+    def __init__(self):
+        super(GradLoss, self).__init__()
+    
+    # L1 norm
+    def forward(self, grad_fake, grad_real):
+        
+        return torch.sum( torch.mean( torch.abs(grad_real-grad_fake) ) )
+
 
 # Create model
 models = {
@@ -16,27 +55,49 @@ models = {
     'resnet101': lambda: PSPNet(sizes=(1, 2, 3, 6), psp_size=2048, deep_features_size=1024, backend='resnet101'),
     'resnet152': lambda: PSPNet(sizes=(1, 2, 3, 6), psp_size=2048, deep_features_size=1024, backend='resnet152')
     }
-    # Instantiate a model
-
+# Instantiate a model and dataset
 net = models['resnet18']()
 depths = ['Test_samples/frame-000000.depth.pgm','Test_samples/frame-000025.depth.pgm','Test_samples/frame-000050.depth.pgm','Test_samples/frame-000075.depth.pgm']
 dataset = Dataset(depths)
 
 # dataset = Dataset(np.load('Data_management/dataset.npy').item()['train'][1:20])
 # Parameters
-params = {'batch_size': 4,
+params = {'batch_size': 1,
           'shuffle': True,
         'num_workers': 8}
 training_generator = data.DataLoader(dataset,**params)
 net.train()
 print(net)
 
+#Optimizer
 optimizer_ft = optim.Adagrad(net.parameters(), lr=0.001, lr_decay=0)
 
-for a in range(150):
+
+# Loss
+depth_criterion = RMSE()
+
+# Use gpu if possible and load model there
+device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
+net.to(device)
+
+for a in range(500):
     for depths, rgbs in training_generator:
-        print(depths.size(), rgbs.size())
-        rgbs = Variable(rgbs)
-        
+        # Get items from generator
+        outputs = depths.to(device)
+        inputs = rgbs.to(device)
+
+        # Clean grads
+        optimizer_ft.zero_grad()
+
+        #Forward
+        predict_depth = net(inputs)
+
+
+        #Backward+update weights
+        depth_loss = depth_criterion(predict_depth, outputs)
+        depth_loss.backward()
+        print(depth_loss.item())
+        optimizer_ft.step()
+
 
 

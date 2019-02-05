@@ -62,8 +62,8 @@ class PSPNet(nn.Module):
 
         self.drop_2 = nn.Dropout2d(p=0.15)
         self.final = nn.Sequential(
-            nn.Conv2d(64, n_classes, kernel_size=1)
-            #nn.LogSoftmax()
+            nn.Conv2d(64, n_classes, kernel_size=1),
+            nn.Sigmoid()
         )
         # No em fa falta per fer refressio
         self.classifier = nn.Sequential(
