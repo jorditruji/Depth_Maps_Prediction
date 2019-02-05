@@ -75,7 +75,7 @@ def process_depth(img,inpaint=0):
 
 	#dst_TELEA_inpainted=equalize_hist(dst_TELEA_inpainted)
 	real_depth = (processed_depth/255)*z_max
-	print("--- %s seconds processing depth frame---" % (time.time() - start_time))
+	#print("--- %s seconds processing depth frame---" % (time.time() - start_time))
 	return processed_depth, mask, real_depth
 
 

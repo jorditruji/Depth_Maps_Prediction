@@ -78,6 +78,7 @@ depth_criterion = RMSE()
 
 # Use gpu if possible and load model there
 device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
+print(device)
 net.to(device)
 
 for a in range(500):
@@ -96,8 +97,11 @@ for a in range(500):
         #Backward+update weights
         depth_loss = depth_criterion(predict_depth, outputs)
         depth_loss.backward()
-        print(depth_loss.item())
         optimizer_ft.step()
 
+        # info
+        if step % 10 == 0:
 
+            print("[epoch %2d] loss: %.4f " \
+                % (epoch, depth_loss )
 

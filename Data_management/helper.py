@@ -2,7 +2,9 @@
 import os.path
 
 class Helper():
-    def __init__(self, img_folder, history_file):
+    def __init__(self, session_name, img_folder, history_file):
+
+        self.session_name = session_name
     	self.img_folder = img_folder
     	self.history_file = self.load_history(history_file)
 
@@ -15,7 +17,7 @@ class Helper():
 
 
     def write_experiment(self, model_name, config, results):
-    	'write new experiment data'
+    	'''write new experiment data'''
     	img_paths = self.make_imgs(results)
     	time_now = datetime.now()
     	insert_struct = {}
@@ -28,4 +30,4 @@ class Helper():
 
 
     def make_imgs(self,results):
-    	'plot images and store them to self.img_path'
+    	'''plot images and store them to self.img_path'''
