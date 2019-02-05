@@ -79,7 +79,7 @@ depth_criterion = RMSE()
 # Use gpu if possible and load model there
 device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 print(device)
-net.to(device)
+net = net.to(device)
 
 for a in range(500):
     for depths, rgbs in training_generator:
