@@ -89,7 +89,7 @@ print(device)
 net = net.to(device)
 #Optimizer
 optimizer_ft = optim.Adagrad(net.parameters(), lr=0.001, lr_decay=0)
-scheduler = optim.StepLR(optimizer_ft, step_size=100, gamma=0.1)
+scheduler = optim.lr_scheduler.StepLR(optimizer_ft, step_size=100, gamma=0.1)
 for a in range(500):
     for depths, rgbs in training_generator:
         # Get items from generator
