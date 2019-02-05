@@ -80,12 +80,12 @@ depth_criterion = RMSE()
 device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 print(device)
 net = net.to(device)
-
+net = net.cuda()
 for a in range(500):
     for depths, rgbs in training_generator:
         # Get items from generator
-        outputs = depths.to(device)
-        inputs = rgbs.to(device)
+        outputs = depths.cuda()
+        inputs = rgbs.cuda()
 
         # Clean grads
         optimizer_ft.zero_grad()
