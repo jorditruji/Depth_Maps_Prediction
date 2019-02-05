@@ -7,6 +7,14 @@ import torch.optim as optim
 from torch.autograd import Variable
 import torch.nn as nn
 
+#LR decay:
+def adjust_learning_rate(optimizer, epoch):
+    """Sets the learning rate to the initial LR decayed by 10 every 30 epochs"""
+    lr = args.lr * (0.1 ** (epoch // 30))
+    for param_group in optimizer.param_groups:
+        param_group['lr'] = lr
+
+
 
 #Losses:
 class RMSE_log(nn.Module):
@@ -81,6 +89,7 @@ print(device)
 net = net.to(device)
 #Optimizer
 optimizer_ft = optim.Adagrad(net.parameters(), lr=0.001, lr_decay=0)
+scheduler = StepLR(optimizer_ft, step_size=100, gamma=0.1)
 for a in range(500):
     for depths, rgbs in training_generator:
         # Get items from generator
@@ -98,7 +107,10 @@ for a in range(500):
         depth_loss = depth_criterion(predict_depth, outputs)
         depth_loss.backward()
         optimizer_ft.step()
+        scheduler.step()
 
 
         print("[epoch %2d] loss: %.4f " % (a, depth_loss ))
 
+
+predict_depth = predict_depth.cpu()
