@@ -113,7 +113,7 @@ for a in range(500):
         #scheduler.step()
         if a%50==0:
             predict_depth = predict_depth.cpu()
-            np.save('first_pred'+a, predict_depth)
+            np.save('first_pred'+str(a), predict_depth)
 
 
         print("[epoch %2d] loss: %.4f " % (a, depth_loss ))
