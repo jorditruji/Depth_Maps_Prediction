@@ -27,7 +27,7 @@ class RMSE_log(nn.Module):
             fake = F.upsample(fake, size=(H,W), mode='bilinear')
         print("Calculing loss")
         print( torch.abs(torch.log(real)-torch.log(fake)) )
-        loss = torch.sqrt( torch.mean( torch.abs(torch.log(real)-torch.log(fake)) ** 2 ) )
+        loss = torch.sqrt( torch.mean(torch.log(real)-torch.log(fake) ** 2 ) )
         return loss
 
 
@@ -104,16 +104,18 @@ for a in range(500):
         #Forward
         predict_depth = net(inputs)
 
-
+        #Sobel grad estimates:
+        predict_grad = dataset.imgrad(predict_depth)
+        real_grad = dataset.imgrad(depths)
         #Backward+update weights
-        depth_loss = depth_criterion(predict_depth, outputs)
+        depth_loss = depth_criterion(predict_depth, outputs)+depth_criterion(predict_grad, real_grad)
         depth_loss.backward()
         optimizer_ft.step()
         loss.append(depth_loss.item())
         #scheduler.step()
-        if a%50==0:
+        if a%10==0:
             predict_depth = predict_depth.detach().cpu()
-            np.save('first_pred'+str(a), predict_depth)
+            np.save('v2_pred'+str(a), predict_depth)
 
 
         print("[epoch %2d] loss: %.4f " % (a, depth_loss ))

@@ -49,7 +49,6 @@ class Dataset(data.Dataset):
 
     def __getitem__(self, index):
         '''Generates one sample of data'''
-        start_time = time.time()
         # Select sample
         depth = read_depth(self.depth_frames[index])
         depth,_a,_b = process_depth(depth)
