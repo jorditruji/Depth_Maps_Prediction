@@ -112,7 +112,7 @@ for a in range(500):
         loss.append(depth_loss.item())
         #scheduler.step()
         if a%50==0:
-            predict_depth = predict_depth.cpu()
+            predict_depth = predict_depth.detach().cpu()
             np.save('first_pred'+str(a), predict_depth)
 
 
