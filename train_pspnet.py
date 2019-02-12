@@ -78,7 +78,8 @@ net.train()
 print(net)
 
 
-
+class CartPoleConfig:
+    learning_rate = 0.001
 
 # Loss
 depth_criterion = RMSE()
@@ -90,6 +91,7 @@ net = net.to(device)
 #Optimizer
 optimizer_ft = optim.Adagrad(net.parameters(), lr=0.001, lr_decay=0)
 scheduler = optim.lr_scheduler.StepLR(optimizer_ft, step_size=100, gamma=0.1)
+loss = []
 for a in range(500):
     for depths, rgbs in training_generator:
         # Get items from generator
@@ -107,10 +109,17 @@ for a in range(500):
         depth_loss = depth_criterion(predict_depth, outputs)
         depth_loss.backward()
         optimizer_ft.step()
-        scheduler.step()
+        loss.append(depth_loss.item())
+        #scheduler.step()
+        if a%50==0:
+            predict_depth = predict_depth.cpu()
+            np.save('first_pred'+a, predict_depth)
 
 
         print("[epoch %2d] loss: %.4f " % (a, depth_loss ))
 
 
 predict_depth = predict_depth.cpu()
+np.save('first_pred', predict_depth)
+
+np.save('loss',loss)
