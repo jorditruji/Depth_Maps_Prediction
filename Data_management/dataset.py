@@ -82,6 +82,7 @@ class Dataset(data.Dataset):
         # open path as file to avoid ResourceWarning (https://github.com/python-pillow/Pillow/issues/835)
         with open(file, 'rb') as f:
             img = Image.open(f).convert('RGB')
+        trans = transforms.Compose([transforms.Resize((480,640))])
         return img
 
     def imgrad(self,img):
