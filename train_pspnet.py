@@ -70,9 +70,9 @@ dataset = Dataset(depths)
 
 # dataset = Dataset(np.load('Data_management/dataset.npy').item()['train'][1:20])
 # Parameters
-params = {'batch_size': 4,
+params = {'batch_size': 1,
           'shuffle': True,
-        'num_workers': 4}
+        'num_workers': 1}
 training_generator = data.DataLoader(dataset,**params)
 net.train()
 print(net)
