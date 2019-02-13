@@ -5,9 +5,9 @@ from PIL import Image
 from Data_management.dataset import Dataset
 from Data_management.depth_preprocessing import read_depth, process_depth
 
-img0 = np.squeeze(np.load('v2_pred10.npy'))
+img0 = np.squeeze(np.load('v2_pred50.npy'))
 
-img50 = np.squeeze(np.load('v2_pred30.npy'))
+img50 = np.squeeze(np.load('v2_pred100.npy'))
 depths = ['Test_samples/frame-000000.depth.pgm','Test_samples/frame-000025.depth.pgm','Test_samples/frame-000050.depth.pgm','Test_samples/frame-000075.depth.pgm']
 dataset = Dataset(depths)
 
@@ -31,9 +31,9 @@ axarr[0,1].imshow(processed_depth,'gray',interpolation='nearest')
 axarr[0,1].set_title('Processed Depth')
 
 axarr[1,0].imshow(img0,'gray', interpolation='nearest')
-axarr[1,0].set_title('10 epochs')
+axarr[1,0].set_title('50 epochs')
 
 axarr[1,1].imshow(img50,'gray', interpolation='nearest')
-axarr[1,1].set_title('30 epochs')
+axarr[1,1].set_title('100 epochs')
 plt.show()
 print("Finished tests")
