@@ -103,7 +103,7 @@ class Dataset(data.Dataset):
 
         # Add dims to fit batch_size, n_filters, filter shape
         a = a.view((1,1,3,3))
-        a = Variable(a)
+        a = Variable(a).to(device)
 
         # Filter horizontal contours
         G_x = F.conv2d(img, a)
@@ -114,7 +114,7 @@ class Dataset(data.Dataset):
                         [-1, -2, -1]])
 
         b = b.view((1,1,3,3))
-        b = Variable(b)
+        b = Variable(b).to(device)
         G_y = F.conv2d(img, b)
 
         G = torch.sqrt(torch.pow(G_x,2)+ torch.pow(G_y,2))

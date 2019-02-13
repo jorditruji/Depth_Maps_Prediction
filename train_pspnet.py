@@ -6,6 +6,7 @@ import numpy as np
 import torch.optim as optim
 from torch.autograd import Variable
 import torch.nn as nn
+from tqdm import tqdm
 
 #LR decay:
 def adjust_learning_rate(optimizer, epoch):
@@ -64,19 +65,19 @@ models = {
     'resnet152': lambda: PSPNet(sizes=(1, 2, 3, 6), psp_size=2048, deep_features_size=1024, backend='resnet152')
     }
 # Instantiate a model and dataset
-net = models['resnet50']()
+net = models['resnet34']()
 depths = np.load('Data_management/dataset.npy').item()
 #depths = ['Test_samples/frame-000000.depth.pgm','Test_samples/frame-000025.depth.pgm','Test_samples/frame-000050.depth.pgm','Test_samples/frame-000075.depth.pgm']
-dataset_train = Dataset(depths['train'])
-dataset_val = Dataset(depths['validation'])
+dataset = Dataset(depths['train'])
+dataset_val = Dataset(depths['val'])
 
 # dataset = Dataset(np.load('Data_management/dataset.npy').item()['train'][1:20])
 # Parameters
-params = {'batch_size': 6,
+params = {'batch_size': 4 ,
           'shuffle': True,
           'num_workers': 4}
 
-training_generator = data.DataLoader(dataset_train,**params)
+training_generator = data.DataLoader(dataset,**params)
 val_generator = data.DataLoader(dataset_val,**params)
 
 net.train()
@@ -113,8 +114,8 @@ for epoch in range(50):
         predict_depth = net(inputs)
 
         #Sobel grad estimates:
-        predict_grad = dataset.imgrad(predict_depth)
-        real_grad = dataset.imgrad(outputs)
+        predict_grad = dataset.imgrad(predict_depth, device)
+        real_grad = dataset.imgrad(outputs, device)
 
         #Backward+update weights
         depth_loss = depth_criterion(predict_depth, outputs)+depth_criterion(predict_grad, real_grad)
@@ -141,8 +142,8 @@ for epoch in range(50):
         predict_depth = net(inputs)
 
         #Sobel grad estimates:
-        predict_grad = dataset.imgrad(predict_depth)
-        real_grad = dataset.imgrad(outputs)
+        predict_grad = dataset.imgrad(predict_depth, device)
+        real_grad = dataset.imgrad(outputs, device)
 
         depth_loss = depth_criterion(predict_depth, outputs)+depth_criterion(predict_grad, real_grad)
        
