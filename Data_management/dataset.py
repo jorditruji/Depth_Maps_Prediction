@@ -85,7 +85,7 @@ class Dataset(data.Dataset):
         trans = transforms.Compose([transforms.Resize((480,640))])
         return img
 
-    def imgrad(self,img):
+    def imgrad(self,img,device):
         ''' Returns sobel gradient '''
         #Black and white input image x, 1x1xHxW
 

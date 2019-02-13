@@ -114,7 +114,7 @@ for epoch in range(50):
 
         #Sobel grad estimates:
         predict_grad = dataset.imgrad(predict_depth)
-        real_grad = dataset.imgrad(depths)
+        real_grad = dataset.imgrad(outputs)
 
         #Backward+update weights
         depth_loss = depth_criterion(predict_depth, outputs)+depth_criterion(predict_grad, real_grad)
@@ -142,7 +142,7 @@ for epoch in range(50):
 
         #Sobel grad estimates:
         predict_grad = dataset.imgrad(predict_depth)
-        real_grad = dataset.imgrad(depths)
+        real_grad = dataset.imgrad(outputs)
 
         depth_loss = depth_criterion(predict_depth, outputs)+depth_criterion(predict_grad, real_grad)
        
