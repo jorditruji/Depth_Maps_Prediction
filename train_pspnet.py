@@ -102,7 +102,9 @@ loss = []
 for epoch in range(50):
     # Train
     net.train()
+    cont = 0
     for depths, rgbs in training_generator:
+        cont+=1
         # Get items from generator
         outputs = depths.to(device)
         inputs = rgbs.to(device)
@@ -122,7 +124,8 @@ for epoch in range(50):
         depth_loss.backward()
         optimizer_ft.step()
         loss.append(depth_loss.item())
-
+        sys.stdout.write('\r%s %s %s %s %s %s' % ('Processing training batch: ', cont, '/', training_generator.__len__(),' with loss: ', depth_loss.item())),
+        sys.stdout.flush()
 
 
     print("[epoch %2d] loss: %.4f " % (epoch, depth_loss ))
@@ -130,7 +133,9 @@ for epoch in range(50):
     # Val
     net.eval()
     loss_val = []
+    cont = 0
     for depths, rgbs in val_generator:
+        cont+=1
         # Get items from generator
         outputs = depths.to(device)
         inputs = rgbs.to(device)
@@ -146,7 +151,10 @@ for epoch in range(50):
         real_grad = dataset.imgrad(outputs, device)
 
         depth_loss = depth_criterion(predict_depth, outputs)+depth_criterion(predict_grad, real_grad)
-       
+        
+        sys.stdout.write('\r%s %s %s %s %s %s ' % ('Processing training batch: ', cont, '/', val_generator.__len__(),' with loss: ', depth_loss.item())),
+        sys.stdout.flush()       
+        
         loss_val.append(depth_loss.item())
         #scheduler.step()
     if epoch%2==0:
