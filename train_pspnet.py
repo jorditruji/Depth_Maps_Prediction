@@ -76,7 +76,7 @@ dataset_val = Dataset(depths['val'])
 # Parameters
 params = {'batch_size': 6 ,
           'shuffle': True,
-          'num_workers': 4}
+          'num_workers': 6}
 
 training_generator = data.DataLoader(dataset,**params)
 val_generator = data.DataLoader(dataset_val,**params)
@@ -107,9 +107,9 @@ for epoch in range(30):
     for depths, rgbs in training_generator:
         cont+=1
         # Get items from generator
-        outputs = depths.to(device)
-        inputs = rgbs.to(device)
-
+        
+        inputs = rgbs.pin_memory() 
+        outputs = depths.cuda(async=True)
         # Clean grads
         optimizer_ft.zero_grad()
 

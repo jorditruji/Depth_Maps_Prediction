@@ -67,11 +67,13 @@ class PSPNet(nn.Module):
             nn.Sigmoid()
         )
         # No em fa falta per fer refressio
+        '''
         self.classifier = nn.Sequential(
             nn.Linear(deep_features_size, 256),
             nn.ReLU(),
             nn.Linear(256, n_classes)
         )
+        '''
         self.x_sobel, self.y_sobel = self.make_sobel_filters()
         self.x_sobel = self.x_sobel.cuda()
         self.y_sobel = self.y_sobel.cuda()
