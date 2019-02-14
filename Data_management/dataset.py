@@ -56,7 +56,7 @@ class Dataset(data.Dataset):
         depth= self.depth_transforms(np.expand_dims(depth,0))
         # Format n_channel, H, Width
         depth = depth.permute(1,2,0)
-        return depth, rgb
+        return depth.pin_memory(), rgb.pin_memory()
 
 
     def depth2RGB(self):

@@ -107,9 +107,10 @@ for epoch in range(30):
     for depths, rgbs in training_generator:
         cont+=1
         # Get items from generator
-        
-        inputs = rgbs.pin_memory() 
         inputs = inputs.cuda()
+
+        # We wont use depths until the RGB is forwarded,
+        # so it can be parallelized with computation
         outputs = depths.cuda(async=True)
         # Clean grads
         optimizer_ft.zero_grad()
@@ -142,8 +143,9 @@ for epoch in range(30):
         for depths, rgbs in val_generator:
             cont+=1
             # Get items from generator
-            outputs = depths.to(device)
-            inputs = rgbs.to(device)
+            inputs = rgbs.cuda()
+            outputs = depths.cuda(async=True)
+            
 
 
             #Forward
