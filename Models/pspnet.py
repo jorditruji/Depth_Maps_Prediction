@@ -3,6 +3,7 @@ import torch
 from torch import nn
 from torch.nn import functional as F
 from . import extractors
+from torch.autograd import Variable
 
 'Contains the implementation of PSPNet developed by https://github.com/Lextal/pspnet-pytorch '
 'The implementation of the available feature extractors can be found at extractors.py'
