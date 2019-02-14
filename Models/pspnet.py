@@ -105,8 +105,6 @@ class PSPNet(nn.Module):
         G_y = F.conv2d(img, self.y_sobel)
 
         G = torch.sqrt(torch.pow(G_x,2)+ torch.pow(G_y,2))
-
-        print(self.y_sobel)
         return G
 
 
