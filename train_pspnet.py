@@ -118,7 +118,7 @@ for epoch in range(30):
 
         #Forward
         predict_depth = net(inputs)
-
+        print(predict_depth.size())
         #Sobel grad estimates:
         predict_grad = net.imgrad(predict_depth)
         real_grad = net.imgrad(outputs)
@@ -127,13 +127,14 @@ for epoch in range(30):
         depth_loss = depth_criterion(predict_depth, outputs)+depth_criterion(predict_grad, real_grad)
         depth_loss.backward()
         optimizer_ft.step()
-        loss.append(depth_loss.item())
-        sys.stdout.write('\r%s %s %s %s %s %s' % ('Processing training batch: ', cont, '/', training_generator.__len__(),' with loss: ', depth_loss.item())),
-        sys.stdout.flush()
+        if cont%250 == 0:
+            #loss.append(depth_loss.item())
+            sys.stdout.write('\r%s %s %s %s %s %s' % ('Processing training batch: ', cont, '/', training_generator.__len__(),' with loss: ', depth_loss),
+            sys.stdout.flush()
 
 
     print("[epoch %2d] loss: %.4f " % (epoch, depth_loss ))
-    
+
     # Val
     net.eval()
     loss_val = []
