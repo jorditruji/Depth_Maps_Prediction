@@ -109,6 +109,7 @@ for epoch in range(30):
         # Get items from generator
         
         inputs = rgbs.pin_memory() 
+        inputs.cuda()
         outputs = depths.cuda(async=True)
         # Clean grads
         optimizer_ft.zero_grad()
