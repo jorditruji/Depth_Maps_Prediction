@@ -120,6 +120,9 @@ for epoch in range(30):
         predict_grad = net.imgrad(predict_depth)
         real_grad = net.imgrad(outputs)
 
+        print("RMSE_pred: {}".format(depth_criterion(predict_depth, outputs).item()))
+        print("RMSE_grad: {}".format(depth_criterion(predict_grad, real_grad).item()))
+
         #Backward+update weights
         depth_loss = depth_criterion(predict_depth, outputs)+depth_criterion(predict_grad, real_grad)
         depth_loss.backward()
