@@ -71,6 +71,38 @@ class PSPNet(nn.Module):
             nn.ReLU(),
             nn.Linear(256, n_classes)
         )
+        self.x_sobel, self.y_sobel = self.make_sobel_filters()
+
+    def make_sobel_filters(self):
+        ''' Returns sobel filters as part of the network'''
+
+        a = torch.Tensor([[1, 0, -1],
+                        [2, 0, -2],
+                        [1, 0, -1]], requires_grad=False)
+
+        # Add dims to fit batch_size, n_filters, filter shape
+        a = a.view((1,1,3,3))
+        a = Variable(a)
+
+                # Repeat for vertical contours
+        b = torch.Tensor([[1, 2, 1],
+                        [0, 0, 0],
+                        [-1, -2, -1]], requires_grad=False)
+
+        b = b.view((1,1,3,3))
+        b = Variable(b)
+
+        return a,b
+
+    def imgrad(self,img):
+        # Filter horizontal contours
+        G_x = F.conv2d(img, self.x_sobel)
+        
+        # Filter vertical contrours
+        G_y = F.conv2d(img, self.x_sobel)
+
+        return torch.sqrt(torch.pow(G_x,2)+ torch.pow(G_y,2))
+
 
     def forward(self, x):
         f, class_f = self.feats(x) 

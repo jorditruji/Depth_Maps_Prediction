@@ -64,6 +64,7 @@ models = {
     'resnet101': lambda: PSPNet(sizes=(1, 2, 3, 6), psp_size=2048, deep_features_size=1024, backend='resnet101'),
     'resnet152': lambda: PSPNet(sizes=(1, 2, 3, 6), psp_size=2048, deep_features_size=1024, backend='resnet152')
     }
+
 # Instantiate a model and dataset
 net = models['resnet34']()
 depths = np.load('Data_management/dataset.npy').item()
@@ -73,7 +74,7 @@ dataset_val = Dataset(depths['val'])
 
 # dataset = Dataset(np.load('Data_management/dataset.npy').item()['train'][1:20])
 # Parameters
-params = {'batch_size': 4 ,
+params = {'batch_size': 6 ,
           'shuffle': True,
           'num_workers': 4}
 
@@ -96,10 +97,10 @@ print(device)
 net = net.to(device)
 
 # Optimizer
-optimizer_ft = optim.Adagrad(net.parameters(), lr=0.001, lr_decay=0)
+optimizer_ft = optim.Adagrad(net.parameters(), lr=2e-4, lr_decay=0)
 scheduler = optim.lr_scheduler.StepLR(optimizer_ft, step_size=100, gamma=0.1)
 loss = []
-for epoch in range(50):
+for epoch in range(30):
     # Train
     net.train()
     cont = 0
@@ -116,8 +117,8 @@ for epoch in range(50):
         predict_depth = net(inputs)
 
         #Sobel grad estimates:
-        predict_grad = dataset.imgrad(predict_depth, device)
-        real_grad = dataset.imgrad(outputs, device)
+        predict_grad = net.imgrad(predict_depth)
+        real_grad = net.imgrad(outputs)
 
         #Backward+update weights
         depth_loss = depth_criterion(predict_depth, outputs)+depth_criterion(predict_grad, real_grad)
@@ -134,35 +135,36 @@ for epoch in range(50):
     net.eval()
     loss_val = []
     cont = 0
-    for depths, rgbs in val_generator:
-        cont+=1
-        # Get items from generator
-        outputs = depths.to(device)
-        inputs = rgbs.to(device)
 
-        # Clean grads
-        optimizer_ft.zero_grad()
-
-        #Forward
-        predict_depth = net(inputs)
-
-        #Sobel grad estimates:
-        predict_grad = dataset.imgrad(predict_depth, device)
-        real_grad = dataset.imgrad(outputs, device)
-
-        depth_loss = depth_criterion(predict_depth, outputs)+depth_criterion(predict_grad, real_grad)
-        
-        sys.stdout.write('\r%s %s %s %s %s %s ' % ('Processing training batch: ', cont, '/', val_generator.__len__(),' with loss: ', depth_loss.item())),
-        sys.stdout.flush()       
-        
-        loss_val.append(depth_loss.item())
-        #scheduler.step()
-    if epoch%2==0:
-        predict_depth = predict_depth.detach().cpu()
-        np.save('v3_pred'+str(epoch), predict_depth)
+    # We dont need to track gradients here, so let's save some memory and time
+    with torch.no_grad():
+        for depths, rgbs in val_generator:
+            cont+=1
+            # Get items from generator
+            outputs = depths.to(device)
+            inputs = rgbs.to(device)
 
 
-    print("[epoch %2d] val loss: %.4f " % (epoch, depth_loss ))
+            #Forward
+            predict_depth = net(inputs)
+
+            #Sobel grad estimates:
+            predict_grad = net.imgrad(predict_depth)
+            real_grad = net.imgrad(outputs)
+
+            depth_loss = depth_criterion(predict_depth, outputs)+depth_criterion(predict_grad, real_grad)
+            
+            sys.stdout.write('\r%s %s %s %s %s %s ' % ('Processing training batch: ', cont, '/', val_generator.__len__(),' with loss: ', depth_loss.item())),
+            sys.stdout.flush()       
+            
+            loss_val.append(depth_loss.item())
+            #scheduler.step()
+        if epoch%2==0:
+            predict_depth = predict_depth.detach().cpu()
+            np.save('v3_pred'+str(epoch), predict_depth)
+
+
+        print("[epoch %2d] val loss: %.4f " % (epoch, depth_loss ))
 
 predict_depth = predict_depth.cpu()
 np.save('first_pred', predict_depth)
