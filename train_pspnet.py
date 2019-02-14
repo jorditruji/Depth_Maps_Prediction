@@ -76,7 +76,8 @@ dataset_val = Dataset(depths['val'])
 # Parameters
 params = {'batch_size': 6 ,
           'shuffle': True,
-          'num_workers': 6}
+          'num_workers': 6,
+          'pin_memory': True}
 
 training_generator = data.DataLoader(dataset,**params)
 val_generator = data.DataLoader(dataset_val,**params)
