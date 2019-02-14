@@ -108,7 +108,7 @@ for epoch in range(30):
     for depths, rgbs in training_generator:
         cont+=1
         # Get items from generator
-        inputs = inputs.cuda()
+        inputs = rgbs.cuda()
 
         # We wont use depths until the RGB is forwarded,
         # so it can be parallelized with computation
