@@ -6,7 +6,7 @@ import numpy as np
 import torch.optim as optim
 from torch.autograd import Variable
 import torch.nn as nn
-from tqdm import tqdm
+
 
 #LR decay:
 def adjust_learning_rate(optimizer, epoch):

@@ -78,7 +78,7 @@ class PSPNet(nn.Module):
 
         a = torch.Tensor([[1, 0, -1],
                         [2, 0, -2],
-                        [1, 0, -1]], requires_grad=False)
+                        [1, 0, -1]])
 
         # Add dims to fit batch_size, n_filters, filter shape
         a = a.view((1,1,3,3))
@@ -87,7 +87,7 @@ class PSPNet(nn.Module):
                 # Repeat for vertical contours
         b = torch.Tensor([[1, 2, 1],
                         [0, 0, 0],
-                        [-1, -2, -1]], requires_grad=False)
+                        [-1, -2, -1]])
 
         b = b.view((1,1,3,3))
         b = Variable(b)
