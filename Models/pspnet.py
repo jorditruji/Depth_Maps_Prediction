@@ -73,6 +73,8 @@ class PSPNet(nn.Module):
             nn.Linear(256, n_classes)
         )
         self.x_sobel, self.y_sobel = self.make_sobel_filters()
+        self.x_sobel = self.x_sobel.cuda()
+        self.y_sobel = self.y_sobel.cuda()
 
     def make_sobel_filters(self):
         ''' Returns sobel filters as part of the network'''
