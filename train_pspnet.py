@@ -51,9 +51,7 @@ class GradLoss(nn.Module):
     # L1 norm
     def forward(self, grad_fake, grad_real):
         
-        grad = torch.sum( torch.mean( torch.abs(grad_real-grad_fake) ) )
-        print(grad)
-        print(grad.size())
+        return torch.sum( torch.mean( torch.abs(grad_real-grad_fake) ) )
 
 
 # Create model

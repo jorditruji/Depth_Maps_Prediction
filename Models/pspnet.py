@@ -104,7 +104,11 @@ class PSPNet(nn.Module):
         # Filter vertical contrours
         G_y = F.conv2d(img, self.x_sobel)
 
-        return torch.sqrt(torch.pow(G_x,2)+ torch.pow(G_y,2))
+        G = torch.sqrt(torch.pow(G_x,2)+ torch.pow(G_y,2))
+
+        print(G)
+        print(G.size())
+        return G
 
 
     def forward(self, x):
