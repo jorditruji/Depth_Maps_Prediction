@@ -1,7 +1,8 @@
 # full assembly of the sub-parts to form the complete net
 
+from torch.autograd import Variable
 import torch.nn.functional as F
-
+import torch
 from .unet_parts import *
 
 class UNet(nn.Module):
