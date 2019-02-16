@@ -76,7 +76,7 @@ dataset_val = Dataset(depths['val'])
 
 # dataset = Dataset(np.load('Data_management/dataset.npy').item()['train'][1:20])
 # Parameters
-params = {'batch_size': 8 ,
+params = {'batch_size': 10 ,
           'shuffle': True,
           'num_workers': 12,
           'pin_memory': True}
@@ -161,10 +161,9 @@ for epoch in range(30):
         if epoch%2==0:
             predict_depth = predict_depth.detach().cpu()
             np.save('v3_pred'+str(epoch), predict_depth)
-    loss_val.append(depth_loss)
-
-
+        loss_val.append(depth_loss)
         print("[epoch %2d] val loss: %.4f " % (epoch, depth_loss ))
+        
     if depth_loss< best_loss:
         best_loss = depth_loss
         best_model_wts = copy.deepcopy(net.state_dict())
