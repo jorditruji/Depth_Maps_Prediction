@@ -121,10 +121,8 @@ for epoch in range(30):
         optimizer_ft.step()
         if cont%250 == 0:
             #loss.append(depth_loss.item())
-            sys.stdout.write('\r%s %s %s %s %s %s' % ('Processing training batch: ', cont, '/', training_generator.__len__(),' with loss: ', depth_loss),
+            sys.stdout.write('\r%s %s %s %s %s %s ' % ('Processing training batch: ', cont, '/', training_generator.__len__(),' with loss: ', depth_loss.item())),
             sys.stdout.flush()
-
-
     print("[epoch %2d] loss: %.4f " % (epoch, depth_loss ))
 
     # Val
@@ -139,8 +137,6 @@ for epoch in range(30):
             # Get items from generator
             inputs = rgbs.cuda()
             outputs = depths.cuda(async=True)
-            
-
 
             #Forward
             predict_depth = net(inputs)
@@ -151,7 +147,7 @@ for epoch in range(30):
 
             depth_loss = depth_criterion(predict_depth, outputs)+depth_criterion(predict_grad, real_grad)
             
-            sys.stdout.write('\r%s %s %s %s %s %s ' % ('Processing training batch: ', cont, '/', val_generator.__len__(),' with loss: ', depth_loss.item())),
+            sys.stdout.write('\r%s %s %s %s %s %s ' % ('Processing val batch: ', cont, '/', val_generator.__len__(),' with loss: ', depth_loss.item())),
             sys.stdout.flush()       
             
             loss_val.append(depth_loss.item())

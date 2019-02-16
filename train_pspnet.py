@@ -129,17 +129,15 @@ for epoch in range(30):
         optimizer_ft.step()
         if cont%250 == 0:
             #loss.append(depth_loss.item())
-            sys.stdout.write('\r%s %s %s %s %s %s' % ('Processing training batch: ', cont, '/', training_generator.__len__(),' with loss: ', depth_loss),
+            sys.stdout.write('\r%s %s %s %s %s %s' % ('Processing training batch: ', cont, '/', training_generator.__len__(),' with loss: ', depth_loss)),
             sys.stdout.flush()
-
-
-    print("[epoch %2d] loss: %.4f " % (epoch, depth_loss ))
-
+    
+    #print("[epoch %2d] loss: %.4f " % (epoch, depth_loss ))
     # Val
     net.eval()
     loss_val = []
     cont = 0
-    
+
     # We dont need to track gradients here, so let's save some memory and time
     with torch.no_grad():
         for depths, rgbs in val_generator:
