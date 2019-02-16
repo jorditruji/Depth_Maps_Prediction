@@ -131,7 +131,7 @@ for epoch in range(30):
             sys.stdout.write('\r%s %s %s %s %s %s' % ('Processing training batch: ', cont, '/', training_generator.__len__(),' with loss: ', depth_loss)),
             sys.stdout.flush()
     
-    #print("[epoch %2d] loss: %.4f " % (epoch, depth_loss ))
+    print("[epoch %2d] loss: %.4f " % (epoch, depth_loss ))
     # Val
     net.eval()
     loss_val = []
