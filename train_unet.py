@@ -1,4 +1,4 @@
-from Models.networks import UnetGenerator
+from Models.unet_model import UNet
 from Data_management.dataset import Dataset
 import torch
 from torch.utils import data
@@ -55,7 +55,7 @@ class GradLoss(nn.Module):
 
 
 # Create model
-model = UnetGenerator(3, 1, 7)
+model = UNet()
 print(model)
 net = model
 # Instantiate a model and dataset

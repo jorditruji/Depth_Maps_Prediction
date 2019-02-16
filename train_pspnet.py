@@ -118,7 +118,6 @@ for epoch in range(30):
 
         #Forward
         predict_depth = net(inputs)
-        print(predict_depth.size())
         #Sobel grad estimates:
         predict_grad = net.imgrad(predict_depth)
         real_grad = net.imgrad(outputs)
