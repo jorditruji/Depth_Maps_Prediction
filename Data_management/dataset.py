@@ -37,7 +37,8 @@ class Dataset(data.Dataset):
                                                 ,transforms.ToTensor()                                                
                                                 ,transforms.Normalize([0.4944742, 0.4425867, 0.38153833], [0.23055981, 0.22284868, 0.21425385])
                                                 ])
-        self.depth_transforms = transforms.Compose([transforms.ToTensor()
+        self.depth_transforms = transforms.Compose([#transforms.Resize((240,320)),
+                                                    transforms.ToTensor()
                                                  #Need to means and stds
                                                  #,transforms.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225])
                                                 ])
@@ -51,7 +52,7 @@ class Dataset(data.Dataset):
         '''Generates one sample of data'''
         # Select sample
         depth = read_depth(self.depth_frames[index])
-        depth,_a,_b = process_depth(depth)
+        depth = process_depth(depth)
         rgb = self.read_jpg_train(self.RGB_frames[index])
         depth= self.depth_transforms(np.expand_dims(depth,0))
         # Format n_channel, H, Width

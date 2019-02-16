@@ -7,6 +7,8 @@ import torch.optim as optim
 from torch.autograd import Variable
 import torch.nn as nn
 import sys
+import copy
+
 
 #LR decay:
 def adjust_learning_rate(optimizer, epoch):
@@ -40,7 +42,7 @@ class RMSE(nn.Module):
         if not fake.shape == real.shape:
             _,_,H,W = real.shape
             fake = F.upsample(fake, size=(H,W), mode='bilinear')
-        loss = torch.sqrt( torch.mean( torch.abs(10.*real-10.*fake) ** 2 ) )
+        loss = torch.sqrt( torch.mean( (10.*real-10.*fake) ** 2 ) )
         return loss
 
 
@@ -74,9 +76,9 @@ dataset_val = Dataset(depths['val'])
 
 # dataset = Dataset(np.load('Data_management/dataset.npy').item()['train'][1:20])
 # Parameters
-params = {'batch_size': 6 ,
+params = {'batch_size': 8 ,
           'shuffle': True,
-          'num_workers': 6,
+          'num_workers': 12,
           'pin_memory': True}
 
 training_generator = data.DataLoader(dataset,**params)
@@ -99,8 +101,9 @@ net = net.to(device)
 
 # Optimizer
 optimizer_ft = optim.Adagrad(net.parameters(), lr=2e-4, lr_decay=0)
-scheduler = optim.lr_scheduler.StepLR(optimizer_ft, step_size=100, gamma=0.1)
+#scheduler = optim.lr_scheduler.StepLR(optimizer_ft, step_size=100, gamma=0.1)
 loss = []
+best_loss = 50
 for epoch in range(30):
     # Train
     net.train()
@@ -117,9 +120,9 @@ for epoch in range(30):
         optimizer_ft.zero_grad()
 
         #Forward
-        predict_depth = net(inputs)
+        predict_depth, predict_grad = net(inputs)
+        
         #Sobel grad estimates:
-        predict_grad = net.imgrad(predict_depth)
         real_grad = net.imgrad(outputs)
 
         #Backward+update weights
@@ -128,7 +131,7 @@ for epoch in range(30):
         optimizer_ft.step()
         if cont%250 == 0:
             #loss.append(depth_loss.item())
-            sys.stdout.write('\r%s %s %s %s %s %s' % ('Processing training batch: ', cont, '/', training_generator.__len__(),' with loss: ', depth_loss)),
+            sys.stdout.write('\r%s %s %s %s %s %s' % ('Processing training batch: ', cont, '/', training_generator.__len__(),' with loss: ', depth_loss.item())),
             sys.stdout.flush()
     
     print("[epoch %2d] loss: %.4f " % (epoch, depth_loss ))
@@ -145,19 +148,16 @@ for epoch in range(30):
             inputs = rgbs.cuda()
             outputs = depths.cuda(async=True)
             
-
-
             #Forward
-            predict_depth = net(inputs)
+            predict_depth , predict_grad= net(inputs)
 
             #Sobel grad estimates:
-            predict_grad = net.imgrad(predict_depth)
             real_grad = net.imgrad(outputs)
 
             depth_loss = depth_criterion(predict_depth, outputs)+depth_criterion(predict_grad, real_grad)
-            
-            sys.stdout.write('\r%s %s %s %s %s %s ' % ('Processing training batch: ', cont, '/', val_generator.__len__(),' with loss: ', depth_loss.item())),
-            sys.stdout.flush()       
+            if cont%250 == 0:
+                sys.stdout.write('\r%s %s %s %s %s %s ' % ('Processing validation batch: ', cont, '/', val_generator.__len__(),' with loss: ', depth_loss.item())),
+                sys.stdout.flush()       
             
             loss_val.append(depth_loss.item())
             #scheduler.step()
@@ -167,7 +167,11 @@ for epoch in range(30):
 
 
         print("[epoch %2d] val loss: %.4f " % (epoch, depth_loss ))
+    if depth_loss< best_loss:
+        best_loss = depth_loss
+        best_model_wts = copy.deepcopy(net.state_dict())
 
+torch.save(best_model_wts.state_dict(), 'model_pspnet')
 predict_depth = predict_depth.cpu()
 np.save('first_pred', predict_depth)
 

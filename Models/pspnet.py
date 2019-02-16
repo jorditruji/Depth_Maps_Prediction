@@ -124,9 +124,11 @@ class PSPNet(nn.Module):
         p = self.up_3(p)
         p = self.drop_2(p)
 
+        p = self.final(p)
+        p_grad = self.imgrad(p)
         #auxiliary = F.adaptive_max_pool2d(input=class_f, output_size=(1, 1)).view(-1, class_f.size(1))
 
-        return self.final(p)#, self.classifier(auxiliary) Not needed for refression
+        return p, p_grad#, self.classifier(auxiliary) Not needed for refression
 
 
 
