@@ -88,9 +88,6 @@ net.train()
 print(net)
 
 
-class CartPoleConfig:
-    learning_rate = 0.001
-
 # Loss
 depth_criterion = RMSE()
 
@@ -136,6 +133,7 @@ for epoch in range(30):
     
     print("[epoch %2d] loss: %.4f " % (epoch, depth_loss ))
     # Val
+    loss.append(depth_loss)
     net.eval()
     loss_val = []
     cont = 0
@@ -159,11 +157,11 @@ for epoch in range(30):
                 sys.stdout.write('\r%s %s %s %s %s %s ' % ('Processing validation batch: ', cont, '/', val_generator.__len__(),' with loss: ', depth_loss.item())),
                 sys.stdout.flush()       
             
-            loss_val.append(depth_loss.item())
             #scheduler.step()
         if epoch%2==0:
             predict_depth = predict_depth.detach().cpu()
             np.save('v3_pred'+str(epoch), predict_depth)
+    loss_val.append(depth_loss)
 
 
         print("[epoch %2d] val loss: %.4f " % (epoch, depth_loss ))
