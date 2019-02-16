@@ -1,4 +1,4 @@
-from Models.pspnet import PSPNet
+from Models.networks import UnetGenerator
 from Data_management.dataset import Dataset
 import torch
 from torch.utils import data
@@ -55,18 +55,10 @@ class GradLoss(nn.Module):
 
 
 # Create model
-models = {
-    'squeezenet': lambda: PSPNet(sizes=(1, 2, 3, 6), psp_size=512, deep_features_size=256, backend='squeezenet'),
-    'densenet': lambda: PSPNet(sizes=(1, 2, 3, 6), psp_size=1024, deep_features_size=512, backend='densenet'),
-    'resnet18': lambda: PSPNet(sizes=(1, 2, 3, 6), psp_size=512, deep_features_size=256, backend='resnet18'),
-    'resnet34': lambda: PSPNet(sizes=(1, 2, 3, 6), psp_size=512, deep_features_size=256, backend='resnet34'),
-    'resnet50': lambda: PSPNet(sizes=(1, 2, 3, 6), psp_size=2048, deep_features_size=1024, backend='resnet50'),
-    'resnet101': lambda: PSPNet(sizes=(1, 2, 3, 6), psp_size=2048, deep_features_size=1024, backend='resnet101'),
-    'resnet152': lambda: PSPNet(sizes=(1, 2, 3, 6), psp_size=2048, deep_features_size=1024, backend='resnet152')
-    }
-
+model = UnetGenerator(3, 1, 7)
+print(model)
+net = model
 # Instantiate a model and dataset
-net = models['resnet34']()
 depths = np.load('Data_management/dataset.npy').item()
 #depths = ['Test_samples/frame-000000.depth.pgm','Test_samples/frame-000025.depth.pgm','Test_samples/frame-000050.depth.pgm','Test_samples/frame-000075.depth.pgm']
 dataset = Dataset(depths['train'])
@@ -139,7 +131,7 @@ for epoch in range(30):
     net.eval()
     loss_val = []
     cont = 0
-    
+
     # We dont need to track gradients here, so let's save some memory and time
     with torch.no_grad():
         for depths, rgbs in val_generator:
