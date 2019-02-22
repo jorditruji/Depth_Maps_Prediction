@@ -3,7 +3,7 @@ import torch
 from torch.utils import data
 import numpy as np
 import time
-from depth_preprocessing import read_depth, process_depth
+from .depth_preprocessing import read_depth, process_depth
 from torchvision import transforms
 from PIL import Image
 import torch.nn as nn
