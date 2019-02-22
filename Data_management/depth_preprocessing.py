@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 from __future__ import division
 import cv2
-from .read_pgm_depth import NetpbmFile
+from read_pgm_depth import NetpbmFile
 import numpy as np
 from itertools import product
 import time
@@ -91,8 +91,8 @@ if __name__ == '__main__':
 	RGB_sample = '../Test_samples/frame-000050.color.jpg'
 	rgb_im = Image.open(RGB_sample)
 	depth = read_depth(depth_sample)
-	processed_depth,mask,real_depth = process_depth(depth,1)
-	processed_depth_new,mask_new, real_depth = process_depth(depth,0)
+	processed_depth = process_depth(depth,1)
+	processed_depth_new = process_depth(depth,0)
 	# Invertim prop de lluny
 	#depth = 65535 - depth
 	f, axarr = pyplot.subplots(2, 2)

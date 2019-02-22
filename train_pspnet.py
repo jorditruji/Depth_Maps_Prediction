@@ -76,9 +76,9 @@ dataset_val = Dataset(depths['val'])
 
 # dataset = Dataset(np.load('Data_management/dataset.npy').item()['train'][1:20])
 # Parameters
-params = {'batch_size': 10 ,
+params = {'batch_size': 12 ,
           'shuffle': True,
-          'num_workers': 12,
+          'num_workers': 16,
           'pin_memory': True}
 
 training_generator = data.DataLoader(dataset,**params)
@@ -100,11 +100,13 @@ net = net.to(device)
 optimizer_ft = optim.Adagrad(net.parameters(), lr=2e-4, lr_decay=0)
 #scheduler = optim.lr_scheduler.StepLR(optimizer_ft, step_size=100, gamma=0.1)
 loss = []
+history_val = []
 best_loss = 50
 for epoch in range(30):
     # Train
     net.train()
     cont = 0
+    loss_train = 0.0
     for depths, rgbs in training_generator:
         cont+=1
         # Get items from generator
@@ -126,16 +128,17 @@ for epoch in range(30):
         depth_loss = depth_criterion(predict_depth, outputs)+depth_criterion(predict_grad, real_grad)
         depth_loss.backward()
         optimizer_ft.step()
+        loss_train+=depth_loss.item()*inputs.size(0)
         if cont%250 == 0:
             #loss.append(depth_loss.item())
-            sys.stdout.write('\r%s %s %s %s %s %s' % ('Processing training batch: ', cont, '/', training_generator.__len__(),' with loss: ', depth_loss.item())),
-            sys.stdout.flush()
-    
-    print("[epoch %2d] loss: %.4f " % (epoch, depth_loss ))
+            print("TRAIN: [epoch %2d][iter %4d] loss: %.4f" \
+            % (epoch, cont, depth_loss.item()))
+    loss_train = loss_train/dataset.__len__()
+    print("\n FINISHED TRAIN epoch %2d with loss: %.4f " % (epoch, loss_train ))
     # Val
-    loss.append(depth_loss)
+    loss.append(loss_train)
     net.eval()
-    loss_val = []
+    loss_val = 0.0
     cont = 0
 
     # We dont need to track gradients here, so let's save some memory and time
@@ -144,6 +147,7 @@ for epoch in range(30):
             cont+=1
             # Get items from generator
             inputs = rgbs.cuda()
+            # Non blocking so computation can start while labels are being loaded
             outputs = depths.cuda(async=True)
             
             #Forward
@@ -153,24 +157,28 @@ for epoch in range(30):
             real_grad = net.imgrad(outputs)
 
             depth_loss = depth_criterion(predict_depth, outputs)+depth_criterion(predict_grad, real_grad)
+            loss_val+=depth_loss.item()*inputs.size(0)
             if cont%250 == 0:
-                sys.stdout.write('\r%s %s %s %s %s %s ' % ('Processing validation batch: ', cont, '/', val_generator.__len__(),' with loss: ', depth_loss.item())),
-                sys.stdout.flush()       
+                print("VAL: [epoch %2d][iter %4d] loss: %.4f" \
+                % (epoch, cont, depth_loss))   
             
             #scheduler.step()
         if epoch%2==0:
             predict_depth = predict_depth.detach().cpu()
             np.save('v3_pred'+str(epoch), predict_depth)
-        loss_val.append(depth_loss)
-        print("[epoch %2d] val loss: %.4f " % (epoch, depth_loss ))
+
+        loss_val = loss_val/dataset_val.__len__()
+        history_val.append(loss_val)
+        print("\n FINISHED TRAIN epoch %2d with loss: %.4f " % (epoch, loss_val ))
         
-    if depth_loss< best_loss:
+    if loss_val< best_loss and epoch>2:
         best_loss = depth_loss
         best_model_wts = copy.deepcopy(net.state_dict())
+        torch.save(best_model_wts.state_dict(), 'model_pspnet')
 
-torch.save(best_model_wts.state_dict(), 'model_pspnet')
+
 predict_depth = predict_depth.cpu()
 np.save('first_pred', predict_depth)
 
 np.save('loss',loss)
-np.save('loss_val',loss_val)
+np.save('loss_val',history_val)
