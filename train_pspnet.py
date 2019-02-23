@@ -174,7 +174,7 @@ for epoch in range(30):
     if loss_val< best_loss and epoch>2:
         best_loss = depth_loss
         best_model_wts = copy.deepcopy(net.state_dict())
-        torch.save(best_model_wts.state_dict(), 'model_pspnet')
+        torch.save(net.state_dict(), 'model_pspnet')
 
 
 predict_depth = predict_depth.cpu()
