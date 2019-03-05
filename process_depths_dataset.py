@@ -20,7 +20,7 @@ dataset_val = Dataset(depths['val'])
 # Parameters
 params = {'batch_size': 1 ,
           'shuffle': True,
-          'num_workers': 16,
+          'num_workers': 8,
           'pin_memory': True}
 
 training_generator = data.DataLoader(dataset,**params)
@@ -28,9 +28,10 @@ val_generator = data.DataLoader(dataset_val,**params)
 
 
 for depth, rgb, path in training_generator:
-	print(path)
-	np_depth = depth.asarray()
-	new_name = path.replace('.depth','_np.depth',1)
+	print(path[0])
+	np_depth = depth.numpy()
+	new_name = path[0].replace('.depth','_np.depth',1)
+	print(new_name)
 	with open(new_name, "wb") as pickle_out:
 		pickle.dump(randomlist, pickle_out)
 
