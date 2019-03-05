@@ -11,6 +11,10 @@ import copy
 import pickle
 
 
+'Comanda per copiar la estructura de directoris (sense fitxers) a un altre lloc'
+#bash$ cd /projects/world3d/2017-06-scannet && find . -type d -exec mkdir -p /work/jmorera/2017-06-scannet/{} \;
+
+
 depths = np.load('Data_management/dataset.npy').item()
 #depths = ['Test_samples/frame-000000.depth.pgm','Test_samples/frame-000025.depth.pgm','Test_samples/frame-000050.depth.pgm','Test_samples/frame-000075.depth.pgm']
 dataset = Dataset(depths['train'])
@@ -30,9 +34,20 @@ val_generator = data.DataLoader(dataset_val,**params)
 for depth, rgb, path in training_generator:
 	print(path[0])
 	np_depth = depth.numpy()
+	# Tunegem els noms...
 	new_name = path[0].replace('.depth','_np.depth',1)
+	new_name = new_name.replace('/projects/world3d/2017-06-scannet', '/work/jmorera/2017-06-scannet' )
 	print(new_name)
 	with open(new_name, "wb") as pickle_out:
-		pickle.dump(randomlist, pickle_out)
+		pickle.dump(np_depth, pickle_out)
 
 
+for depth, rgb, path in val_generator:
+	print(path[0])
+	np_depth = depth.numpy()
+	# Tunegem els noms...
+	new_name = path[0].replace('.depth','_np.depth',1)
+	new_name = new_name.replace('/projects/world3d/2017-06-scannet', '/work/jmorera/2017-06-scannet' )
+	print(new_name)
+	with open(new_name, "wb") as pickle_out:
+		pickle.dump(np_depth, pickle_out)
