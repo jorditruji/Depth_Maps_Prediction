@@ -8,6 +8,7 @@ from torch.autograd import Variable
 import torch.nn as nn
 import sys
 import copy
+import pickle
 
 
 depths = np.load('Data_management/dataset.npy').item()
@@ -17,7 +18,7 @@ dataset_val = Dataset(depths['val'])
 
 # dataset = Dataset(np.load('Data_management/dataset.npy').item()['train'][1:20])
 # Parameters
-params = {'batch_size': 12 ,
+params = {'batch_size': 1 ,
           'shuffle': True,
           'num_workers': 16,
           'pin_memory': True}
@@ -28,5 +29,9 @@ val_generator = data.DataLoader(dataset_val,**params)
 
 for depth, rgb, path in training_generator:
 	print(path)
+	np_depth = depth.asarray()
+	new_name = path.replace('.depth','_np.depth',1)
+	with open(new_name, "wb") as pickle_out:
+		pickle.dump(randomlist, pickle_out)
 
 
