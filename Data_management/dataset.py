@@ -49,7 +49,7 @@ class Dataset(data.Dataset):
 
     '''
     def __getitem__(self, index):
-        '''Generates one sample of data'''
+        #Generates one sample of data
         # Select sample
         depth = read_depth(self.depth_frames[index])
         depth = process_depth(depth)
