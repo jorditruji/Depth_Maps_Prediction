@@ -169,7 +169,7 @@ for epoch in range(30):
 
         loss_val = loss_val/dataset_val.__len__()
         history_val.append(loss_val)
-        print("\n FINISHED TRAIN epoch %2d with loss: %.4f " % (epoch, loss_val ))
+        print("\n FINISHED VAL epoch %2d with loss: %.4f " % (epoch, loss_val ))
         
     if loss_val< best_loss and epoch>2:
         best_loss = depth_loss

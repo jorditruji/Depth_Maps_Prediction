@@ -47,7 +47,7 @@ class Dataset(data.Dataset):
         '''Denotes the total number of samples'''
         return len(self.depth_frames)
 
-
+    '''
     def __getitem__(self, index):
         '''Generates one sample of data'''
         # Select sample
@@ -60,7 +60,19 @@ class Dataset(data.Dataset):
 
 
         return depth, rgb
+    '''
+    def __getitem__(self, index):
+        '''Generates one sample of data'''
+        # Select sample
+        depth = read_depth(self.depth_frames[index])
+        depth = process_depth(depth)
+        # Format #channels, H, W
 
+        rgb = self.read_jpg_train(self.RGB_frames[index])
+        depth= self.depth_transforms(Image.fromarray(depth, mode = 'L'))
+
+
+        return depth, rgb, self.depth_frames[index]
 
     def depth2RGB(self):
         '''Edit strings to match rgb image paths'''
