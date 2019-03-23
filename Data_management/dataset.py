@@ -9,7 +9,7 @@ from PIL import Image
 import torch.nn as nn
 import torch.nn.functional as F
 from torch.autograd import Variable
-
+import pickle
 
 'RECORDATORI SCANNET dataset: \
 Max depth(uint16): 9998 \
