@@ -10,13 +10,14 @@ import sys
 import copy
 import torch.nn.functional as F
 
+
+
 #LR decay:
 def adjust_learning_rate(optimizer, epoch):
     """Sets the learning rate to the initial LR decayed by 10 every 30 epochs"""
     lr = args.lr * (0.1 ** (epoch // 30))
     for param_group in optimizer.param_groups:
         param_group['lr'] = lr
-
 
 
 #Losses:
@@ -68,7 +69,7 @@ models = {
     }
 
 # Instantiate a model and dataset
-net = models['resnet34']()
+net = models['resnet18']()
 depths = np.load('Data_management/dataset.npy').item()
 #depths = ['Test_samples/frame-000000.depth.pgm','Test_samples/frame-000025.depth.pgm','Test_samples/frame-000050.depth.pgm','Test_samples/frame-000075.depth.pgm']
 dataset = Dataset(depths['train'])
@@ -107,7 +108,7 @@ for epoch in range(30):
     net.train()
     cont = 0
     loss_train = 0.0
-    for depths, rgbs in training_generator:
+    for depths, rgbs, filename in training_generator:
         cont+=1
         # Get items from generator
         inputs = rgbs.cuda()
@@ -143,7 +144,7 @@ for epoch in range(30):
 
     # We dont need to track gradients here, so let's save some memory and time
     with torch.no_grad():
-        for depths, rgbs in val_generator:
+        for depths, rgbs, filename in val_generator:
             cont+=1
             # Get items from generator
             inputs = rgbs.cuda()
@@ -165,7 +166,9 @@ for epoch in range(30):
             #scheduler.step()
         if epoch%2==0:
             predict_depth = predict_depth.detach().cpu()
-            np.save('v3_pred'+str(epoch), predict_depth)
+            saver['names'] = filename
+            saver['img'] = predict_depth
+            np.save('pspnet'+str(epoch), saver)
 
         loss_val = loss_val/dataset_val.__len__()
         history_val.append(loss_val)
