@@ -72,7 +72,7 @@ class Dataset(data.Dataset):
         depth= self.depth_transforms(Image.fromarray(depth, mode = 'L'))
 
 
-        return depth, rgb, self.depth_frames[index].split('/')[-1][:,-4]
+        return depth, rgb, self.depth_frames[index].split('/')[-1][:-4]
 
     def depth2RGB(self):
         '''Edit strings to match rgb image paths'''
