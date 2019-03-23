@@ -64,10 +64,14 @@ class Dataset(data.Dataset):
     def __getitem__(self, index):
         '''Generates one sample of data'''
         # Select sample
-        depth = read_depth(self.depth_frames[index])
-        depth = process_depth(depth)
+        depth_name = self.depth_frames[index]
+        #depth = process_depth(depth)
+        new_name = depth_name.replace('_np.depth','.depth', 1)
+        new_name = new_name.replace('/work/jmorera/2017-06-scannet', '/projects/world3d/2017-06-scannet' )
         # Format #channels, H, W
-
+        infile = open(new_name,'rb')
+        depth = pickle.load(infile)
+        infile.close()
         rgb = self.read_jpg_train(self.RGB_frames[index])
         depth= self.depth_transforms(Image.fromarray(depth, mode = 'L'))
 
