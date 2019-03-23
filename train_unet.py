@@ -9,7 +9,7 @@ import torch.nn as nn
 import sys
 import copy
 from Models.unet import UNet
-
+import torch.nn.functional as F
 
 #LR decay:
 def adjust_learning_rate(optimizer, epoch):

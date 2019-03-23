@@ -8,7 +8,7 @@ from torch.autograd import Variable
 import torch.nn as nn
 import sys
 import copy
-
+import torch.nn.functional as F
 
 #LR decay:
 def adjust_learning_rate(optimizer, epoch):
