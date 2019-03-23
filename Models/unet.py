@@ -49,6 +49,10 @@ class UNet(nn.Module):
 
         self.last = nn.Sequential(nn.Conv2d(prev_channels, n_classes, kernel_size=1),
                     nn.Sigmoid())
+        self.x_sobel, self.y_sobel = self.make_sobel_filters()
+        self.x_sobel = self.x_sobel.cuda()
+        self.y_sobel = self.y_sobel.cuda()
+
 
     def forward(self, x):
         blocks = []
@@ -61,7 +65,40 @@ class UNet(nn.Module):
         for i, up in enumerate(self.up_path):
             x = up(x, blocks[-i-1])
 
-        return self.last(x)
+        p = self.last(x)
+        return p, self.imgrad(p)
+    
+    def make_sobel_filters(self):
+        ''' Returns sobel filters as part of the network'''
+
+        a = torch.Tensor([[1, 0, -1],
+                        [2, 0, -2],
+                        [1, 0, -1]])
+
+        # Add dims to fit batch_size, n_filters, filter shape
+        a = a.view((1,1,3,3))
+        a = Variable(a)
+
+                # Repeat for vertical contours
+        b = torch.Tensor([[1, 2, 1],
+                        [0, 0, 0],
+                        [-1, -2, -1]])
+
+        b = b.view((1,1,3,3))
+        b = Variable(b)
+
+        return a,b
+
+    
+    def imgrad(self,img):
+        # Filter horizontal contours
+        G_x = F.conv2d(img, self.x_sobel)
+        
+        # Filter vertical contrours
+        G_y = F.conv2d(img, self.y_sobel)
+
+        G = torch.sqrt(torch.pow(G_x,2)+ torch.pow(G_y,2))
+        return G
 
 
 class UNetConvBlock(nn.Module):
