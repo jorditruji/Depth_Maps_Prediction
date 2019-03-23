@@ -65,6 +65,7 @@ class Dataset(data.Dataset):
         '''Generates one sample of data'''
         # Select sample
         depth_name = self.depth_frames[index]
+        print(depth_name)
         #depth = process_depth(depth)
         new_name = depth_name.replace('_np.depth','.depth', 1)
         new_name = new_name.replace('/work/jmorera/2017-06-scannet', '/projects/world3d/2017-06-scannet' )
