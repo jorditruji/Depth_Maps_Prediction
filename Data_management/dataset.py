@@ -69,11 +69,12 @@ class Dataset(data.Dataset):
         new_name = depth_name.replace('_np.depth','.depth', 1)
         new_name = new_name.replace('/work/jmorera/2017-06-scannet', '/projects/world3d/2017-06-scannet' )
         # Format #channels, H, W
+        print(new_name)
         infile = open(new_name,'rb')
-        depth = pickle.load(infile)
+        depth = np.squeeze(pickle.load(infile), axis=0)
         infile.close()
         rgb = self.read_jpg_train(self.RGB_frames[index])
-        depth= self.depth_transforms(Image.fromarray(depth, mode = 'L'))
+        #depth= self.depth_transforms(Image.fromarray(depth, mode = 'L'))
 
 
         return depth, rgb, self.depth_frames[index]
