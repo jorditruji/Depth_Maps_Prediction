@@ -166,7 +166,10 @@ for epoch in range(30):
             #scheduler.step()
         if epoch%2==0:
             predict_depth = predict_depth.detach().cpu()
-            np.save(filename+str(epoch), predict_depth)
+            saver = {}
+            saver['names'] = filename
+            saver['img'] = predict_depth
+            np.save('unet'+str(epoch), saver)
 
         loss_val = loss_val/dataset_val.__len__()
         history_val.append(loss_val)
