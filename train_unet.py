@@ -1,4 +1,4 @@
-from Models.unet_model import UNet
+from Models.pspnet import PSPNet
 from Data_management.dataset import Dataset
 import torch
 from torch.utils import data
@@ -7,6 +7,9 @@ import torch.optim as optim
 from torch.autograd import Variable
 import torch.nn as nn
 import sys
+import copy
+from Models.unet import UNet
+
 
 #LR decay:
 def adjust_learning_rate(optimizer, epoch):
@@ -40,7 +43,7 @@ class RMSE(nn.Module):
         if not fake.shape == real.shape:
             _,_,H,W = real.shape
             fake = F.upsample(fake, size=(H,W), mode='bilinear')
-        loss = torch.sqrt( torch.mean( torch.abs(10.*real-10.*fake) ** 2 ) )
+        loss = torch.sqrt( torch.mean( (10.*real-10.*fake) ** 2 ) )
         return loss
 
 
@@ -55,10 +58,18 @@ class GradLoss(nn.Module):
 
 
 # Create model
-model = UNet()
-print(model)
-net = model
+models = {
+    'squeezenet': lambda: PSPNet(sizes=(1, 2, 3, 6), psp_size=512, deep_features_size=256, backend='squeezenet'),
+    'densenet': lambda: PSPNet(sizes=(1, 2, 3, 6), psp_size=1024, deep_features_size=512, backend='densenet'),
+    'resnet18': lambda: PSPNet(sizes=(1, 2, 3, 6), psp_size=512, deep_features_size=256, backend='resnet18'),
+    'resnet34': lambda: PSPNet(sizes=(1, 2, 3, 6), psp_size=512, deep_features_size=256, backend='resnet34'),
+    'resnet50': lambda: PSPNet(sizes=(1, 2, 3, 6), psp_size=2048, deep_features_size=1024, backend='resnet50'),
+    'resnet101': lambda: PSPNet(sizes=(1, 2, 3, 6), psp_size=2048, deep_features_size=1024, backend='resnet101'),
+    'resnet152': lambda: PSPNet(sizes=(1, 2, 3, 6), psp_size=2048, deep_features_size=1024, backend='resnet152')
+    }
+
 # Instantiate a model and dataset
+net = UNet()
 depths = np.load('Data_management/dataset.npy').item()
 #depths = ['Test_samples/frame-000000.depth.pgm','Test_samples/frame-000025.depth.pgm','Test_samples/frame-000050.depth.pgm','Test_samples/frame-000075.depth.pgm']
 dataset = Dataset(depths['train'])
@@ -66,9 +77,9 @@ dataset_val = Dataset(depths['val'])
 
 # dataset = Dataset(np.load('Data_management/dataset.npy').item()['train'][1:20])
 # Parameters
-params = {'batch_size': 6 ,
+params = {'batch_size': 12 ,
           'shuffle': True,
-          'num_workers': 6,
+          'num_workers': 16,
           'pin_memory': True}
 
 training_generator = data.DataLoader(dataset,**params)
@@ -77,9 +88,6 @@ val_generator = data.DataLoader(dataset_val,**params)
 net.train()
 print(net)
 
-
-class CartPoleConfig:
-    learning_rate = 0.001
 
 # Loss
 depth_criterion = RMSE()
@@ -91,13 +99,16 @@ net = net.to(device)
 
 # Optimizer
 optimizer_ft = optim.Adagrad(net.parameters(), lr=2e-4, lr_decay=0)
-scheduler = optim.lr_scheduler.StepLR(optimizer_ft, step_size=100, gamma=0.1)
+#scheduler = optim.lr_scheduler.StepLR(optimizer_ft, step_size=100, gamma=0.1)
 loss = []
+history_val = []
+best_loss = 50
 for epoch in range(30):
     # Train
     net.train()
     cont = 0
-    for depths, rgbs in training_generator:
+    loss_train = 0.0
+    for depths, rgbs, filename in training_generator:
         cont+=1
         # Get items from generator
         inputs = rgbs.cuda()
@@ -109,58 +120,63 @@ for epoch in range(30):
         optimizer_ft.zero_grad()
 
         #Forward
-        predict_depth = net(inputs)
-        #print(predict_depth.size())
+        predict_depth, predict_grad = net(inputs)
+        
         #Sobel grad estimates:
-        predict_grad = net.imgrad(predict_depth)
         real_grad = net.imgrad(outputs)
 
         #Backward+update weights
         depth_loss = depth_criterion(predict_depth, outputs)+depth_criterion(predict_grad, real_grad)
         depth_loss.backward()
         optimizer_ft.step()
+        loss_train+=depth_loss.item()*inputs.size(0)
         if cont%250 == 0:
             #loss.append(depth_loss.item())
-            sys.stdout.write('\r%s %s %s %s %s %s ' % ('Processing training batch: ', cont, '/', training_generator.__len__(),' with loss: ', depth_loss.item())),
-            sys.stdout.flush()
-    print("[epoch %2d] loss: %.4f " % (epoch, depth_loss ))
-
+            print("TRAIN: [epoch %2d][iter %4d] loss: %.4f" \
+            % (epoch, cont, depth_loss.item()))
+    loss_train = loss_train/dataset.__len__()
+    print("\n FINISHED TRAIN epoch %2d with loss: %.4f " % (epoch, loss_train ))
     # Val
+    loss.append(loss_train)
     net.eval()
-    loss_val = []
+    loss_val = 0.0
     cont = 0
 
     # We dont need to track gradients here, so let's save some memory and time
     with torch.no_grad():
-        for depths, rgbs in val_generator:
+        for depths, rgbs, filename in val_generator:
             cont+=1
             # Get items from generator
             inputs = rgbs.cuda()
+            # Non blocking so computation can start while labels are being loaded
             outputs = depths.cuda(async=True)
-
+            
             #Forward
-            predict_depth = net(inputs)
+            predict_depth , predict_grad= net(inputs)
 
             #Sobel grad estimates:
-            predict_grad = net.imgrad(predict_depth)
             real_grad = net.imgrad(outputs)
 
             depth_loss = depth_criterion(predict_depth, outputs)+depth_criterion(predict_grad, real_grad)
+            loss_val+=depth_loss.item()*inputs.size(0)
+            if cont%250 == 0:
+                print("VAL: [epoch %2d][iter %4d] loss: %.4f" \
+                % (epoch, cont, depth_loss))   
             
-            sys.stdout.write('\r%s %s %s %s %s %s ' % ('Processing val batch: ', cont, '/', val_generator.__len__(),' with loss: ', depth_loss.item())),
-            sys.stdout.flush()       
-            
-            loss_val.append(depth_loss.item())
             #scheduler.step()
         if epoch%2==0:
             predict_depth = predict_depth.detach().cpu()
-            np.save('v3_pred'+str(epoch), predict_depth)
+            np.save(filename+str(epoch), predict_depth)
 
+        loss_val = loss_val/dataset_val.__len__()
+        history_val.append(loss_val)
+        print("\n FINISHED VAL epoch %2d with loss: %.4f " % (epoch, loss_val ))
+        
+    if loss_val< best_loss and epoch>=2:
+        best_loss = depth_loss
+        best_model_wts = copy.deepcopy(net.state_dict())
+        torch.save(net.state_dict(), 'model_unet')
 
-        print("[epoch %2d] val loss: %.4f " % (epoch, depth_loss ))
-
-predict_depth = predict_depth.cpu()
-np.save('first_pred', predict_depth)
 
 np.save('loss',loss)
-np.save('loss_val',loss_val)
+np.save('loss_val',history_val)
