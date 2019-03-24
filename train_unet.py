@@ -155,7 +155,7 @@ for epoch in range(30):
             
             #Forward
             predict_depth , predict_grad= net(inputs)
-
+            print("Label_size: {}\nOutput size: {}".format(outputs.shape, predict_depth.shape))
             #Sobel grad estimates:
             real_grad = net.imgrad(outputs)
 

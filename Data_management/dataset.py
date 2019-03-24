@@ -66,6 +66,7 @@ class Dataset(data.Dataset):
         # Select sample
         depth_name = self.depth_frames[index]
         #depth = process_depth(depth)
+        # Saved the pre-processed pickles in another place, adapting old paths...
         new_name = depth_name.replace('.depth','_np.depth',1)
         new_name = new_name.replace('/projects/world3d/2017-06-scannet', '/work/jmorera/2017-06-scannet' ) # Format #channels, H, W
         infile = open(new_name,'rb')

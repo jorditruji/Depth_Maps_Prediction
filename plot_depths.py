@@ -5,9 +5,14 @@ from PIL import Image
 from Data_management.dataset import Dataset
 from Data_management.depth_preprocessing import read_depth, process_depth
 
-img0 = np.squeeze(np.load('v2_pred50.npy'))
+img0 = np.squeeze(np.load('Test_outputs/unet2.npy'))
+
 
 img50 = np.squeeze(np.load('v3_pred0.npy'))
+
+
+
+
 print(img50.shape)
 depths = ['Test_samples/frame-000000.depth.pgm','Test_samples/frame-000025.depth.pgm','Test_samples/frame-000050.depth.pgm','Test_samples/frame-000075.depth.pgm']
 dataset = Dataset(depths)
