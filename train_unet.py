@@ -79,7 +79,7 @@ dataset_val = Dataset(depths['val'])
 
 # dataset = Dataset(np.load('Data_management/dataset.npy').item()['train'][1:20])
 # Parameters
-params = {'batch_size': 12 ,
+params = {'batch_size': 28 ,
           'shuffle': True,
           'num_workers': 16,
           'pin_memory': True}

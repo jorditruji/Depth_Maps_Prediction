@@ -77,7 +77,7 @@ dataset_val = Dataset(depths['val'])
 
 # dataset = Dataset(np.load('Data_management/dataset.npy').item()['train'][1:20])
 # Parameters
-params = {'batch_size': 12 ,
+params = {'batch_size': 24 ,
           'shuffle': True,
           'num_workers': 16,
           'pin_memory': True}
@@ -183,5 +183,5 @@ for epoch in range(30):
 predict_depth = predict_depth.cpu()
 np.save('first_pred', predict_depth)
 
-np.save('loss',loss)
-np.save('loss_val',history_val)
+np.save('loss_psp',loss)
+np.save('loss_val_psp',history_val)
