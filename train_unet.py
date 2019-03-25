@@ -131,6 +131,10 @@ for epoch in range(300):
         #Backward+update weights
         depth_loss = depth_criterion(predict_depth, outputs)+depth_criterion(predict_grad, real_grad)
         depth_loss.backward()
+        for name, param in net.named_parameters():
+            if param.requires_grad:
+                print name, param.grad.sum()
+            
         optimizer_ft.step()
         loss_train+=depth_loss.item()*inputs.size(0)
         if cont%250 == 0:
@@ -169,12 +173,13 @@ for epoch in range(300):
             #scheduler.step()
         if epoch%2==0:
             predict_depth = predict_depth.detach().cpu()
+            print(predict_depth)
             saver = {}
             saver['names'] = filename
             saver['img'] = predict_depth
             np.save('unet'+str(epoch), saver)
 
-        loss_val = loss_val/dataset_val.__len__()
+        loss_val = loss_val/dataset.__len__()
         history_val.append(loss_val)
         print("\n FINISHED VAL epoch %2d with loss: %.4f " % (epoch, loss_val ))
         
