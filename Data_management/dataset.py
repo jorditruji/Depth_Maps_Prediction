@@ -28,12 +28,13 @@ class Dataset(data.Dataset):
         self.train = train
         self.depth_frames = depth_names
         self.RGB_frames = self.depth2RGB()
+        # https://github.com/pytorch/vision/issues/9
         self.RGB_transforms_train = transforms.Compose([transforms.Resize((240,320))
                                                 ,transforms.ColorJitter()
                                                 ,transforms.ToTensor()                                                
                                                 ,transforms.Normalize([0.4944742, 0.4425867, 0.38153833], [0.23055981, 0.22284868, 0.21425385])
                                                 ])
-        self.RGB_transforms_test = transforms.Compose([transforms.Resize((480,640))
+        self.RGB_transforms_test = transforms.Compose([transforms.Resize((240,320))
                                                 ,transforms.ToTensor()                                                
                                                 ,transforms.Normalize([0.4944742, 0.4425867, 0.38153833], [0.23055981, 0.22284868, 0.21425385])
                                                 ])

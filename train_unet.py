@@ -72,20 +72,20 @@ models = {
 
 # Instantiate a model and dataset
 net = UNet()
-depths = np.load('Data_management/dataset.npy').item()
+#depths = np.load('Data_management/dataset.npy').item()
 #depths = ['Test_samples/frame-000000.depth.pgm','Test_samples/frame-000025.depth.pgm','Test_samples/frame-000050.depth.pgm','Test_samples/frame-000075.depth.pgm']
-dataset = Dataset(depths['train'])
-dataset_val = Dataset(depths['val'])
-
+#dataset = Dataset(depths['train'])
+#dataset_val = Dataset(depths['val'])
+dataset = Dataset(depths, train = False)
 # dataset = Dataset(np.load('Data_management/dataset.npy').item()['train'][1:20])
 # Parameters
-params = {'batch_size': 28 ,
+params = {'batch_size': 16 ,
           'shuffle': True,
           'num_workers': 16,
           'pin_memory': True}
 
 training_generator = data.DataLoader(dataset,**params)
-val_generator = data.DataLoader(dataset_val,**params)
+#val_generator = data.DataLoader(dataset_val,**params)
 
 net.train()
 print(net)
@@ -105,7 +105,7 @@ optimizer_ft = optim.Adagrad(net.parameters(), lr=2e-4, lr_decay=0)
 loss = []
 history_val = []
 best_loss = 50
-for epoch in range(30):
+for epoch in range(300):
     # Train
     net.train()
     cont = 0
@@ -123,7 +123,7 @@ for epoch in range(30):
 
         #Forward
         predict_depth, predict_grad = net(inputs)
-        print("Label_size: {}\nOutput size: {}".format(outputs.shape, predict_depth.shape))
+        #print("Label_size: {}\nOutput size: {}".format(outputs.shape, predict_depth.shape))
         
         #Sobel grad estimates:
         real_grad = net.imgrad(outputs)
@@ -142,12 +142,13 @@ for epoch in range(30):
     # Val
     loss.append(loss_train)
     net.eval()
+    
     loss_val = 0.0
     cont = 0
 
     # We dont need to track gradients here, so let's save some memory and time
     with torch.no_grad():
-        for depths, rgbs, filename in val_generator:
+        for depths, rgbs, filename in training_generator:
             cont+=1
             # Get items from generator
             inputs = rgbs.cuda()

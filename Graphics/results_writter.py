@@ -6,6 +6,15 @@ from matplotlib import path, rcParams
 import matplotlib.pyplot as plt
 from sklearn.metrics import confusion_matrix
 import datetime
+import psycopg2
+
+
+# PG  connection
+PG_USER="postgres"
+PG_PWD="gcmPlbmeP6"
+PG_PORT="5434"
+PG_DB = "boehringer"
+host='147.83.192.81'
 
 class Results_writter():
     """
@@ -18,12 +27,16 @@ class Results_writter():
         labels: original labels
 
     """
-    def __init__(self, model_name, config, results):
+    def __init__(self, model_name, config, results, data_actual):
         self.model_name = model_name
         self.config = config
         self.results = results
-        self.class_names = ['AnyConnect', 'Interflex', 'Word', 'Outlook', 'Skype']
-        self.data_actual = datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
+        self.data_actual = data_actual
+        self.conn = psycopg2.connect(database=PG_DB,
+                                user=PG_USER,
+                                password=PG_PWD,
+                                host=host,
+                                port=PG_PORT)
 
     def save(self):
         # Conf matrix
@@ -34,6 +47,32 @@ class Results_writter():
 
         # Save vectors of losses and accus
         self.save_results_disk('Results/res_'+self.model_name+'_'+self.data_actual)
+
+
+
+    def insert_sql(self):
+        '''
+        Inserta nom del model, vector losses, vector accuracies
+        '''
+        insert = """INSERT INTO public.training_data_IR (model_name, id_exp, train_loss, val_loss \
+            VALUES(%s, %s,%s, %s, %s, %s );"""
+
+        try:
+            # create a new cursor
+            cur = self.conn.cursor()
+            # execute the INSERT statement
+
+            cur.execute(insert, (self.model_name, self.data_actual, list(self.results['losses']['train']), list(self.results['losses']['val'])))
+            # commit the changes to the database
+            self.conn.commit()
+            # close communication with the database
+            cur.close()
+        except (Exception, psycopg2.DatabaseError) as error:
+            print(error)
+
+        return
+
+
 
 
     def save_results_disk(self, filename):
