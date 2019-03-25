@@ -72,11 +72,11 @@ models = {
 
 # Instantiate a model and dataset
 net = UNet()
-#depths = np.load('Data_management/dataset.npy').item()
+depths = np.load('Data_management/dataset.npy').item()
 #depths = ['Test_samples/frame-000000.depth.pgm','Test_samples/frame-000025.depth.pgm','Test_samples/frame-000050.depth.pgm','Test_samples/frame-000075.depth.pgm']
-#dataset = Dataset(depths['train'])
+dataset = Dataset(depths['train'][0:20])
 #dataset_val = Dataset(depths['val'])
-dataset = Dataset(depths, train = False)
+#dataset = Dataset(depths, train = False)
 # dataset = Dataset(np.load('Data_management/dataset.npy').item()['train'][1:20])
 # Parameters
 params = {'batch_size': 16 ,
@@ -142,7 +142,7 @@ for epoch in range(300):
     # Val
     loss.append(loss_train)
     net.eval()
-    
+
     loss_val = 0.0
     cont = 0
 
