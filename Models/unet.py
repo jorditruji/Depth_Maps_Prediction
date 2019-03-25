@@ -102,6 +102,141 @@ class UNet(nn.Module):
         return G
 
 
+
+
+class UNet_V2(nn.Module):
+    def __init__(self, in_channels=(3,1), n_classes=1, depth=5, wf=6, padding=True,
+                 batch_norm=False, up_mode='upconv'):
+        """
+        Implementation of
+        U-Net: Convolutional Networks for Biomedical Image Segmentation
+        (Ronneberger et al., 2015)
+        https://arxiv.org/abs/1505.04597
+        Using the default arguments will yield the exact version used
+        in the original paper
+        Args:
+            in_channels (tupple): number of input channels per encoder
+            n_classes (int): number of output channels
+            depth (int): depth of the network
+            wf (int): number of filters in the first layer is 2**wf
+            padding (bool): if True, apply padding such that the input shape
+                            is the same as the output.
+                            This may introduce artifacts
+            batch_norm (bool): Use BatchNorm after layers with an
+                               activation function
+            up_mode (str): one of 'upconv' or 'upsample'.
+                           'upconv' will use transposed convolutions for
+                           learned upsampling.
+                           'upsample' will use bilinear upsampling.
+        """
+        super(UNet, self).__init__()
+        assert up_mode in ('upconv', 'upsample')
+        self.padding = padding
+        self.depth = depth
+        prev_channels = in_channels[0]
+
+        # RGB Encoder
+        self.down_path_RGB = nn.ModuleList()
+        for i in range(depth):
+            self.down_path_RGB.append(UNetConvBlock(prev_channels, 2**(wf+i),
+                                                padding, batch_norm))
+            prev_channels = 2**(wf+i)
+
+        prev_channels_depth = in_channels[1]
+
+        # Depth encoder
+        self.down_path_depth = nn.ModuleList()
+        for i in range(depth):
+            self.down_path_depth.append(UNetConvBlock(prev_channels_depth, 2**(wf+i),
+                                                padding, batch_norm))
+            prev_channels_depth = 2**(wf+i)
+
+        # Check dimensions
+        assert prev_channels_depth == prev_channels
+
+        # Common?? decoder
+        self.up_path = nn.ModuleList()
+        for i in reversed(range(depth - 1)):
+            self.up_path.append(UNetUpBlock(prev_channels, 2**(wf+i), up_mode,
+                                            padding, batch_norm))
+            prev_channels = 2**(wf+i)
+
+        # Output
+        self.last = nn.Sequential(nn.Conv2d(prev_channels, n_classes, kernel_size=1),
+                    nn.Sigmoid())
+
+        # Sobel filters
+        self.x_sobel, self.y_sobel = self.make_sobel_filters()
+        self.x_sobel = self.x_sobel.cuda()
+        self.y_sobel = self.y_sobel.cuda()
+
+
+    def forward(self, x):
+        # DUBTE!!
+        x_depth = x.clone() #Unlike copy_(), this function is recorded in the computation graph. Gradients propagating to the cloned tensor will propagate to the original tensor.        blocks = []
+        #x_depth = x.copy()
+        
+        # Encoder RGB
+        blocks_RGB = []
+        for i, down in enumerate(self.down_path_RGB):
+            x = down(x)
+            if i != len(self.down_path)-1:
+                blocks_RGB.append(x)
+                x = F.max_pool2d(x, 2)
+
+        # Encoder depth
+        for i, down in enumerate(self.down_path_RGB):
+            x_depth = down(x_depth)
+            if i != len(self.down_path)-1:
+                #blocks_depth.append(x_depth) NO HO NECESSITO???
+                x_depth = F.max_pool2d(x_depth, 2)
+
+        # Decoder RGB
+        for i, up in enumerate(self.up_path):
+            x = up(x, blocks[-i-1])
+
+
+        # Decoder Depth
+        for i, up in enumerate(self.up_path):
+            x_depth = up(x_depth, blocks[-i-1])
+
+        p_RGB = self.last(x)
+        p_depth = self.last(x_depth)
+        return p_RGB, self.imgrad(p_RGB), p_depth , self.imgrad(p_depth)
+    
+    def make_sobel_filters(self):
+        ''' Returns sobel filters as part of the network'''
+
+        a = torch.Tensor([[1, 0, -1],
+                        [2, 0, -2],
+                        [1, 0, -1]])
+
+        # Add dims to fit batch_size, n_filters, filter shape
+        a = a.view((1,1,3,3))
+        a = Variable(a)
+
+                # Repeat for vertical contours
+        b = torch.Tensor([[1, 2, 1],
+                        [0, 0, 0],
+                        [-1, -2, -1]])
+
+        b = b.view((1,1,3,3))
+        b = Variable(b)
+
+        return a,b
+
+    
+    def imgrad(self,img):
+        # Filter horizontal contours
+        G_x = F.conv2d(img, self.x_sobel)
+        
+        # Filter vertical contrours
+        G_y = F.conv2d(img, self.y_sobel)
+
+        G = torch.sqrt(torch.pow(G_x,2)+ torch.pow(G_y,2))
+        return G
+
+
 class UNetConvBlock(nn.Module):
     def __init__(self, in_size, out_size, padding, batch_norm):
         super(UNetConvBlock, self).__init__()
