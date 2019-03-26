@@ -129,11 +129,11 @@ for epoch in range(300):
         real_grad = net.imgrad(outputs)
 
         #Backward+update weights
-        depth_loss = depth_criterion(predict_depth, outputs)+depth_criterion(predict_grad, real_grad)
+        depth_loss = depth_criterion(predict_depth, outputs)#+depth_criterion(predict_grad, real_grad)
         depth_loss.backward()
         for name, param in net.named_parameters():
             if param.requires_grad:
-                print name, param.grad.sum()
+                print(name, param.grad.sum())
             
         optimizer_ft.step()
         loss_train+=depth_loss.item()*inputs.size(0)
