@@ -118,19 +118,26 @@ class Results_writter():
 
     def plot_losses(self, data , filename ):
 
-        #plt.subplot(2,1,1)
-        plt.figure()
+        plt.subplot(3,1,1)
+        #plt.figure()
         plt.plot(data['losses']['train'], c = 'b', label = 'train')
         plt.plot(data['losses']['val'], c = 'r', label = 'validation')
         plt.title('Loss 1: logMSE')
         plt.legend(loc='upper right')
-        '''
-        plt.subplot(2,1,2)
-        plt.plot(data['acc']['train'], c = 'b', label = 'train')
-        plt.plot(data['acc']['val'], c = 'r', label = 'validation')
+        
+
+        plt.subplot(3,1,2)
+        plt.plot(data['losses']['train_logmse'], c = 'b', label = 'train')
+        plt.plot(data['losses']['val_logmse'], c = 'r', label = 'validation')
         plt.legend(loc='upper right')
-        plt.title('Accuracy')
-        '''
+        plt.title('Log MSE')
+
+        plt.subplot(3,1,3)
+        plt.plot(data['losses']['train_logmse'], c = 'b', label = 'train')
+        plt.plot(data['losses']['val_logmse'], c = 'r', label = 'validation')
+        plt.legend(loc='upper right')
+        plt.title('Log MSE')
+              
         plt.savefig(filename+'.png')
         #cleaning memory
         plt.cla()
