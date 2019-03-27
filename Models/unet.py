@@ -171,10 +171,8 @@ class UNet_V2(nn.Module):
         self.y_sobel = self.y_sobel.cuda()
 
 
-    def forward(self, x, depth):
+    def forward(self, x, x_depth):
         # DUBTE!!
-        x_depth =depth #Unlike copy_(), this function is recorded in the computation graph. Gradients propagating to the cloned tensor will propagate to the original tensor.        blocks = []
-        #x_depth = x.copy()
         
         # Encoder RGB
         blocks_RGB = []
@@ -188,7 +186,6 @@ class UNet_V2(nn.Module):
         for i, down in enumerate(self.down_path_depth):
             x_depth = down(x_depth)
             if i != len(self.down_path)-1:
-                #blocks_depth.append(x_depth) NO HO NECESSITO???
                 x_depth = F.max_pool2d(x_depth, 2)
 
         # Decoder RGB
