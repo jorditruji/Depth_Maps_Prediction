@@ -9,12 +9,6 @@ import datetime
 import psycopg2
 
 
-# PG  connection
-PG_USER="postgres"
-PG_PWD="gcmPlbmeP6"
-PG_PORT="5434"
-PG_DB = "boehringer"
-host='147.83.192.81'
 
 class Results_writter():
     """

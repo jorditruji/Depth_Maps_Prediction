@@ -9,7 +9,29 @@ import torch.nn as nn
 import sys
 import copy
 import torch.nn.functional as F
+import matplotlib 
+matplotlib.use('Agg')
+matplotlib.rcParams['agg.path.chunksize'] = 10000
+from matplotlib import path, rcParams
+import matplotlib.pyplot as plt
 
+# Save predictions
+
+def save_predictions(prediction, rgb, depth):
+    # Matplotlib style display = channels last
+    inp = rgb.numpy().transpose((1, 2, 0))
+    mean = np.array([0.4944742,  0.4425867,  0.38153833])
+    std = np.array([0.23055981, 0.22284868, 0.21425385])
+    inp = std * inp + mean
+
+    plt.subplot(3,1,1)
+    plt.imshow(inp)
+    plt.title("RGB")
+
+    #Depth
+    depth = depth.numpy()
+    plt.subplot(3,1,1)
+    plt.imshow(depth, 'gray', interpolation='nearest')
 
 
 #LR decay:
