@@ -60,10 +60,20 @@ class RMSE_log(nn.Module):
             _,_,H,W = real.shape
             fake = F.upsample(fake, size=(H,W), mode='bilinear')
         print("Calculing loss")
-        print( torch.abs(torch.log(real)-torch.log(fake)) )
-        loss = torch.sqrt( torch.mean(torch.log(real)-torch.log(fake) ** 2 ) )
+        loss = torch.sqrt( torch.mean(torch.log(real+1e-4)-torch.log(fake+1e-4) ** 2 ) )
         return loss
 
+
+class NormalLoss(nn.Module):
+    def __init__(self):
+        super(NormalLoss, self).__init__()
+    
+    def forward(self, grad_fake, grad_real):
+        prod = ( grad_fake[:,:,None,:] @ grad_real[:,:,:,None] ).squeeze(-1).squeeze(-1)
+        fake_norm = torch.sqrt( torch.sum( grad_fake**2, dim=-1 ) )
+        real_norm = torch.sqrt( torch.sum( grad_real**2, dim=-1 ) )
+        
+        return 1 - torch.mean( prod/(fake_norm*real_norm) )
 
 class RMSE(nn.Module):
     def __init__(self):
@@ -120,15 +130,16 @@ print(net)
 
 
 # Loss
-depth_criterion = RMSE()
-
+depth_criterion = RMSE_log()
+grad_loss = GradLoss()
+normal_loss = NormalLoss()
 # Use gpu if possible and load model there
 device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 print(device)
 net = net.to(device)
 
 # Optimizer
-optimizer_ft = optim.Adagrad(net.parameters(), lr=2e-4, lr_decay=0)
+optimizer_ft = optim.Adam(net.parameters(), lr=2e-4, betas=(0.9, 0.999), eps=1e-08, weight_decay=4e-5)
 #scheduler = optim.lr_scheduler.StepLR(optimizer_ft, step_size=100, gamma=0.1)
 loss = []
 history_val = []
@@ -156,11 +167,13 @@ for epoch in range(30):
         real_grad = net.imgrad(outputs)
 
         #Backward+update weights
-        depth_loss = depth_criterion(predict_depth, outputs)+depth_criterion(predict_grad, real_grad)
-        depth_loss.backward()
+        depth_loss = depth_criterion(predict_depth, outputs)
+        grad_loss = grad_loss(predict_grad*10, real_grad*10) * (epoch>4)
+        normal_loss = normal_loss(predict_grad, real_grad) * (epoch>7)
+        loss = depth_loss + grad_loss + normal_loss
+        loss.backward()
         optimizer_ft.step()
-        loss_train+=depth_loss.item()*inputs.size(0)
-        save_predictions(predict_depth[0].detach(), rgbs[0], outputs[0])
+        loss_train+=loss.item()*inputs.size(0)
         if cont%250 == 0:
             #loss.append(depth_loss.item())
             print("TRAIN: [epoch %2d][iter %4d] loss: %.4f" \
@@ -188,7 +201,7 @@ for epoch in range(30):
             #Sobel grad estimates:
             real_grad = net.imgrad(outputs)
 
-            depth_loss = depth_criterion(predict_depth, outputs)+depth_criterion(predict_grad, real_grad)
+            depth_loss = depth_criterion(predict_depth, outputs)#+depth_criterion(predict_grad, real_grad)
             loss_val+=depth_loss.item()*inputs.size(0)
             if cont%250 == 0:
                 print("VAL: [epoch %2d][iter %4d] loss: %.4f" \
@@ -199,7 +212,9 @@ for epoch in range(30):
             predict_depth = predict_depth.detach().cpu()
             saver['names'] = filename
             saver['img'] = predict_depth
-            np.save('pspnet'+str(epoch), saver)
+            #np.save('pspnet'+str(epoch), saver)
+            save_predictions(predict_depth[0].detach(), rgbs[0], outputs[0],name ='pspnet_epoch_'+str(epoch))
+
 
         loss_val = loss_val/dataset_val.__len__()
         history_val.append(loss_val)
@@ -211,8 +226,6 @@ for epoch in range(30):
         torch.save(net.state_dict(), 'model_pspnet')
 
 
-predict_depth = predict_depth.cpu()
-np.save('first_pred', predict_depth)
 
 np.save('loss_psp',loss)
 np.save('loss_val_psp',history_val)
