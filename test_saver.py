@@ -23,16 +23,15 @@ def save_predictions(prediction, rgb, depth):
     inp = rgb.numpy().transpose((1, 2, 0))
     mean = np.array([0.4944742,  0.4425867,  0.38153833])
     std = np.array([0.23055981, 0.22284868, 0.21425385])
-    inp = std * inp + mean
-
+    # inp = std * inp + mean
+    print(inp.shape)
     plt.subplot(2,1,1)
     plt.imshow(inp)
     plt.title("RGB")
-
+    print(depth.shape)
     #Depth
-    depth = depth.numpy()
     plt.subplot(2,1,2)
-    plt.imshow(depth, 'gray', interpolation='nearest')
+    plt.imshow(np.squeeze(depth), 'gray', interpolation='nearest')
     plt.show()
     plt.savefig('test'+'.png')
 
@@ -44,9 +43,9 @@ if __name__ == '__main__':
     # Sample data
 
 
-	depths = np.load('Data_management/dataset.npy').item()
+    depths = np.load('Data_management/dataset.npy').item()['train']
     dataset = Dataset(depths)
-    sample_depth, sample_RGB = dataset.__getitem__(0)
-
-    print(sample_RGB.size(), sample_depth.size())
+    sample_depth, sample_RGB, path = dataset.__getitem__(0)
+    #print(sample_depth, sample_RGB)
+    print(sample_RGB.size())#, sample_depth.size())
     save_predictions('', sample_RGB,sample_depth)
