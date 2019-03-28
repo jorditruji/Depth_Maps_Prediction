@@ -17,21 +17,29 @@ import matplotlib.pyplot as plt
 
 # Save predictions
 
-def save_predictions(prediction, rgb, depth):
+def save_predictions(name,prediction, rgb, depth):
     # Matplotlib style display = channels last
     inp = rgb.numpy().transpose((1, 2, 0))
     mean = np.array([0.4944742,  0.4425867,  0.38153833])
     std = np.array([0.23055981, 0.22284868, 0.21425385])
-    inp = std * inp + mean
-
+    # inp = std * inp + mean
+    print(inp.shape)
     plt.subplot(3,1,1)
     plt.imshow(inp)
     plt.title("RGB")
-
+    print(depth.shape)
     #Depth
-    depth = depth.numpy()
-    plt.subplot(3,1,1)
-    plt.imshow(depth, 'gray', interpolation='nearest')
+    plt.subplot(3,1,2)
+    plt.imshow(np.squeeze(depth.numpy()), 'gray', interpolation='nearest')
+    plt.title("Ground truth")
+
+    plt.subplot(3,1,3)
+    plt.imshow(np.squeeze(prediction.numpy()), 'gray', interpolation='nearest')
+    plt.title("Prediction")
+
+    plt.show()
+    plt.savefig(name+'.png')
+    return
 
 
 #LR decay:
@@ -152,6 +160,7 @@ for epoch in range(30):
         depth_loss.backward()
         optimizer_ft.step()
         loss_train+=depth_loss.item()*inputs.size(0)
+        save_predictions(name,predict_depth[0], rgbs[0], outputs[0])
         if cont%250 == 0:
             #loss.append(depth_loss.item())
             print("TRAIN: [epoch %2d][iter %4d] loss: %.4f" \
