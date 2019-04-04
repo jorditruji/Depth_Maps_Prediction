@@ -64,7 +64,7 @@ class UNet(nn.Module):
 
     def forward(self, x):
         blocks = []
-        x = input_cnn(x)
+        x = self.input_cnn(x)
         for i, down in enumerate(self.down_path):
             x = down(x)
             if i != len(self.down_path)-1:

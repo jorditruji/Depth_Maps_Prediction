@@ -1,4 +1,3 @@
-from Models.pspnet import PSPNet
 from Models.extractors import *
 from Data_management.dataset import Dataset
 import torch
@@ -101,17 +100,6 @@ class GradLoss(nn.Module):
         return torch.sum( torch.mean( torch.abs(grad_real-grad_fake) ) )
 
 
-# Create model
-models = {
-    'squeezenet': lambda: PSPNet(sizes=(1, 2, 3, 6), psp_size=512, deep_features_size=256, backend='squeezenet'),
-    'densenet': lambda: PSPNet(sizes=(1, 2, 3, 6), psp_size=1024, deep_features_size=512, backend='densenet'),
-    'resnet18': lambda: PSPNet(sizes=(1, 2, 3, 6), psp_size=512, deep_features_size=256, backend='resnet18'),
-    'resnet34': lambda: PSPNet(sizes=(1, 2, 3, 6), psp_size=512, deep_features_size=256, backend='resnet34'),
-    'resnet50': lambda: PSPNet(sizes=(1, 2, 3, 6), psp_size=2048, deep_features_size=1024, backend='resnet50'),
-    'resnet101': lambda: PSPNet(sizes=(1, 2, 3, 6), psp_size=2048, deep_features_size=1024, backend='resnet101'),
-    'resnet152': lambda: PSPNet(sizes=(1, 2, 3, 6), psp_size=2048, deep_features_size=1024, backend='resnet152')
-    }
-
 # Instantiate a model and dataset
 net = UNet()
 resnet = resnet18(pretrained=True)
@@ -135,9 +123,9 @@ dataset_val = Dataset(depths['val'],train = False)
 
 # dataset = Dataset(np.load('Data_management/dataset.npy').item()['train'][1:20])
 # Parameters
-params = {'batch_size': 32 ,
+params = {'batch_size': 24 ,
           'shuffle': True,
-          'num_workers': 16,
+          'num_workers': 12,
           'pin_memory': True}
 
 training_generator = data.DataLoader(dataset,**params)
