@@ -113,7 +113,7 @@ models = {
     }
 
 # Instantiate a model and dataset
-net = Unet()
+net = UNet()
 resnet = resnet18(pretrained=True)
 
 def load_weights_sequential(target, source_state):
