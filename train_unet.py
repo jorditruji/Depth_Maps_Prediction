@@ -1,4 +1,5 @@
 from Models.pspnet import PSPNet
+from Models.extractors import *
 from Data_management.dataset import Dataset
 import torch
 from torch.utils import data
@@ -112,7 +113,21 @@ models = {
     }
 
 # Instantiate a model and dataset
-net = models['resnet18']()
+net = Unet()
+resnet = resnet18(pretrained=True)
+
+def load_weights_sequential(target, source_state):
+    new_dict = OrderedDict()
+    for (k1, v1), (k2, v2) in zip(target.state_dict().items(), source_state.items()):
+        if not k1.split('.')[0]== 'up_path':
+          print(k1,k2)
+          print(v1.shape, v2.shape)
+          new_dict[k1] = v2
+    target.state_dict().update(new_dict)
+    
+
+load_weights_sequential(net, resnet.state_dict() )
+del resnet
 depths = np.load('Data_management/dataset.npy').item()
 #depths = ['Test_samples/frame-000000.depth.pgm','Test_samples/frame-000025.depth.pgm','Test_samples/frame-000050.depth.pgm','Test_samples/frame-000075.depth.pgm']
 dataset = Dataset(depths['train'])
