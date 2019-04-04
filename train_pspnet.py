@@ -233,7 +233,7 @@ for epoch in range(25):
         history_val.append(loss_val)
         print("\n FINISHED VAL epoch %2d with loss: %.4f " % (epoch, loss_val ))
         
-    if loss_val< best_loss and epoch>2:
+    if loss_val< best_loss and epoch>6:
         best_loss = depth_loss
         best_model_wts = copy.deepcopy(net.state_dict())
         torch.save(net.state_dict(), 'model_pspnet')
