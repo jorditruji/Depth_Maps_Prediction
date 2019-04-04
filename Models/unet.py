@@ -8,7 +8,7 @@ from torch.autograd import Variable
 
 class UNet(nn.Module):
     def __init__(self, in_channels=3, n_classes=1, depth=5, wf=6, padding=True,
-                 batch_norm=False, up_mode='upconv'):
+                 batch_norm=True, up_mode='upconv'):
         """
         Implementation of
         U-Net: Convolutional Networks for Biomedical Image Segmentation
@@ -34,19 +34,26 @@ class UNet(nn.Module):
         super(UNet, self).__init__()
         assert up_mode in ('upconv', 'upsample')
         self.padding = padding
+        filter_per_layer = [ 64, 64,  64, 128, 128,256]
+        self.input_cnn = nn.Sequential(nn.Conv2d(in_channels, 64, kernel_size=7, bias = False,padding =1),
+                                        nn.BatchNorm2d(64),
+                                        nn.ReLU(inplace = True),
+                                        nn.MaxPool2d(kernel_size=3, stride=2, padding=1)
+                                                   )
         self.depth = depth
         prev_channels = in_channels
         self.down_path = nn.ModuleList()
+
         for i in range(depth):
-            self.down_path.append(UNetConvBlock(prev_channels, 2**(wf+i),
+            self.down_path.append(UNetConvBlock(filter_per_layer[i], filter_per_layer[i+1],
                                                 padding, batch_norm))
-            prev_channels = 2**(wf+i)
+            prev_channels = filter_per_layer[i+1]
 
         self.up_path = nn.ModuleList()
         for i in reversed(range(depth - 1)):
-            self.up_path.append(UNetUpBlock(prev_channels, 2**(wf+i), up_mode,
+            self.up_path.append(UNetUpBlock(prev_channels, filter_per_layer[i], up_mode,
                                             padding, batch_norm))
-            prev_channels = 2**(wf+i)
+            prev_channels = filter_per_layer[i]
 
         self.last = nn.Sequential(nn.Conv2d(prev_channels, n_classes, kernel_size=1),
                     nn.Sigmoid())
@@ -57,6 +64,7 @@ class UNet(nn.Module):
 
     def forward(self, x):
         blocks = []
+        x = input_cnn(x)
         for i, down in enumerate(self.down_path):
             x = down(x)
             if i != len(self.down_path)-1:
@@ -80,7 +88,7 @@ class UNet(nn.Module):
         a = a.view((1,1,3,3))
         a = Variable(a)
 
-                # Repeat for vertical contours
+        # Repeat for vertical contours
         b = torch.Tensor([[1, 2, 1],
                         [0, 0, 0],
                         [-1, -2, -1]])
@@ -106,7 +114,7 @@ class UNet(nn.Module):
 
 class UNet_V2(nn.Module):
     def __init__(self, in_channels=(3,1), n_classes=1, depth=5, wf=6, padding=True,
-                 batch_norm=False, up_mode='upconv', map_depth_channels = True):
+                 batch_norm=True, up_mode='upconv', map_depth_channels = True):
         """
         Implementation of
         U-Net: Convolutional Networks for Biomedical Image Segmentation
@@ -247,18 +255,18 @@ class UNetConvBlock(nn.Module):
     def __init__(self, in_size, out_size, padding, batch_norm):
         super(UNetConvBlock, self).__init__()
         block = []
-
-        block.append(nn.Conv2d(in_size, out_size, kernel_size=3,
-                               padding=int(padding)))
-        block.append(nn.ReLU())
+        kernel_size = 3
+        block.append(nn.Conv2d(in_size, out_size, kernel_size=kernel_size,
+                               padding=int(padding), bias=False))
         if batch_norm:
             block.append(nn.BatchNorm2d(out_size))
+        block.append(nn.ReLU(inplace=True))
 
         block.append(nn.Conv2d(out_size, out_size, kernel_size=3,
-                               padding=int(padding)))
-        block.append(nn.ReLU())
+                               padding=int(padding), bias=False))
         if batch_norm:
             block.append(nn.BatchNorm2d(out_size))
+        block.append(nn.ReLU(inplace=True))
 
         self.block = nn.Sequential(*block)
 
@@ -291,3 +299,9 @@ class UNetUpBlock(nn.Module):
         out = torch.cat([up, crop1], 1)
         out = self.conv_block(out)
         return out
+
+
+
+if __name__ == "__main__":        
+    unet = UNet()
+    print(unet)
