@@ -185,8 +185,6 @@ for epoch in range(25):
             % (epoch, cont, depth_loss.item()))
     if epoch%2==0:
         predict_depth = predict_depth.detach().cpu()
-        saver['names'] = filename
-        saver['img'] = predict_depth
         #np.save('pspnet'+str(epoch), saver)
         save_predictions(predict_depth[0].detach(), rgbs[0], outputs[0],name ='pspnet_train_epoch_'+str(epoch))
 
@@ -223,8 +221,6 @@ for epoch in range(25):
             #scheduler.step()
         if epoch%2==0:
             predict_depth = predict_depth.detach().cpu()
-            saver['names'] = filename
-            saver['img'] = predict_depth
             #np.save('pspnet'+str(epoch), saver)
             save_predictions(predict_depth[0].detach(), rgbs[0], outputs[0],name ='pspnet_epoch_'+str(epoch))
 
