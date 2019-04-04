@@ -57,8 +57,11 @@ class RMSE_log(nn.Module):
         if not fake.shape == real.shape:
             _,_,H,W = real.shape
             fake = F.upsample(fake, size=(H,W), mode='bilinear')
-        print("Calculing loss")
-        loss = torch.sqrt( torch.mean(torch.log(real+1e-4)-torch.log(fake+1e-4) ** 2 ) )
+        #print("Calculing loss")
+        #print(torch.min(fake), torch.min(real))
+        #print(torch.max(fake), torch.max(real))
+        loss = torch.sqrt( torch.mean(torch.abs(torch.log(real+1e-3)-torch.log(fake+1e-3)) ** 2 ) )
+        #print(loss)
         return loss
 
 
@@ -111,11 +114,11 @@ net = models['resnet18']()
 depths = np.load('Data_management/dataset.npy').item()
 #depths = ['Test_samples/frame-000000.depth.pgm','Test_samples/frame-000025.depth.pgm','Test_samples/frame-000050.depth.pgm','Test_samples/frame-000075.depth.pgm']
 dataset = Dataset(depths['train'])
-dataset_val = Dataset(depths['val'])
+dataset_val = Dataset(depths['val'],train = False)
 
 # dataset = Dataset(np.load('Data_management/dataset.npy').item()['train'][1:20])
 # Parameters
-params = {'batch_size': 24 ,
+params = {'batch_size': 32 ,
           'shuffle': True,
           'num_workers': 16,
           'pin_memory': True}
@@ -163,13 +166,16 @@ for epoch in range(25):
         predict_depth, predict_grad = net(inputs)
         
         #Sobel grad estimates:
-        real_grad = net.imgrad(outputs)
+        
 
         #Backward+update weights
         depth_loss = depth_criterion(predict_depth, outputs)
-        grad_loss = grad_loss(predict_grad*10, real_grad*10) * (epoch>4)
-        normal_loss = normal_loss(predict_grad, real_grad) * (epoch>7)
-        loss = depth_loss + grad_loss + normal_loss
+        grad_loss = 0.
+        if epoch > 4:
+            real_grad = net.imgrad(outputs)
+            grad_loss = grad_loss(predict_grad, real_grad)
+        #normal_loss = normal_loss(predict_grad, real_grad) * (epoch>7)
+        loss = depth_loss + grad_loss# + normal_loss
         loss.backward()
         optimizer_ft.step()
         loss_train+=loss.item()*inputs.size(0)
