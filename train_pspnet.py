@@ -23,11 +23,9 @@ def save_predictions(prediction, rgb, depth, name = 'test'):
     mean = np.array([0.4944742,  0.4425867,  0.38153833])
     std = np.array([0.23055981, 0.22284868, 0.21425385])
     # inp = std * inp + mean
-    print(inp.shape)
     plt.subplot(3,1,1)
     plt.imshow(inp)
     plt.title("RGB")
-    print(depth.shape)
     #Depth
     plt.subplot(3,1,2)
     plt.imshow(np.squeeze(depth.cpu().numpy()), 'gray', interpolation='nearest')
@@ -144,11 +142,12 @@ optimizer_ft = optim.Adam(net.parameters(), lr=2e-4, betas=(0.9, 0.999), eps=1e-
 loss = []
 history_val = []
 best_loss = 50
-for epoch in range(30):
+for epoch in range(25):
     # Train
     net.train()
     cont = 0
     loss_train = 0.0
+
     for depths, rgbs, filename in training_generator:
         cont+=1
         # Get items from generator
@@ -178,6 +177,14 @@ for epoch in range(30):
             #loss.append(depth_loss.item())
             print("TRAIN: [epoch %2d][iter %4d] loss: %.4f" \
             % (epoch, cont, depth_loss.item()))
+    if epoch%2==0:
+        predict_depth = predict_depth.detach().cpu()
+        saver['names'] = filename
+        saver['img'] = predict_depth
+        #np.save('pspnet'+str(epoch), saver)
+        save_predictions(predict_depth[0].detach(), rgbs[0], outputs[0],name ='pspnet_train_epoch_'+str(epoch))
+
+
     loss_train = loss_train/dataset.__len__()
     print("\n FINISHED TRAIN epoch %2d with loss: %.4f " % (epoch, loss_train ))
     # Val
