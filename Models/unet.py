@@ -34,7 +34,7 @@ class UNet(nn.Module):
         super(UNet, self).__init__()
         assert up_mode in ('upconv', 'upsample')
         self.padding = padding
-        filter_per_layer = [ 64, 64,  64, 128, 128,256]
+        filter_per_layer = [ 64, 64,  64, 128, 128,256, 256]
         self.input_cnn = nn.Sequential(nn.Conv2d(in_channels, 64, kernel_size=7, bias = False,padding =1),
                                         nn.BatchNorm2d(64),
                                         nn.ReLU(inplace = True),
