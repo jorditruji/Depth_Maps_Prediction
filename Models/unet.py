@@ -48,6 +48,7 @@ class UNet(nn.Module):
             self.down_path.append(UNetConvBlock(filter_per_layer[i], filter_per_layer[i+1],
                                                 padding, batch_norm))
             prev_channels = filter_per_layer[i+1]
+        filter_per_layer = [ 64, 64,  64, 128, 192,256, 256]
 
         self.up_path = nn.ModuleList()
         for i in reversed(range(depth - 1)):
