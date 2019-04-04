@@ -106,7 +106,7 @@ class UNet(nn.Module):
 
 class UNet_V2(nn.Module):
     def __init__(self, in_channels=(3,1), n_classes=1, depth=5, wf=6, padding=True,
-                 batch_norm=False, up_mode='upconv'):
+                 batch_norm=False, up_mode='upconv', map_depth_channels = True):
         """
         Implementation of
         U-Net: Convolutional Networks for Biomedical Image Segmentation
@@ -132,8 +132,11 @@ class UNet_V2(nn.Module):
         super(UNet, self).__init__()
         assert up_mode in ('upconv', 'upsample')
         self.padding = padding
+        self.map_depth_channels = map_depth_channels
         self.depth = depth
         prev_channels = in_channels[0]
+
+        self.input_cnn = nn.Conv2d(in_channels[1], in_channels[0], kernel_size=1)
 
         # RGB Encoder
         self.down_path_RGB = nn.ModuleList()
@@ -141,10 +144,16 @@ class UNet_V2(nn.Module):
             self.down_path_RGB.append(UNetConvBlock(prev_channels, 2**(wf+i),
                                                 padding, batch_norm))
             prev_channels = 2**(wf+i)
-
-        prev_channels_depth = in_channels[1]
+        
 
         # Depth encoder
+        prev_channels_depth = in_channels[1]
+
+        # Trick to load pretrained_resnet
+        if map_depth_channels:
+            prev_channels_depth = 3
+
+
         self.down_path_depth = nn.ModuleList()
         for i in range(depth):
             self.down_path_depth.append(UNetConvBlock(prev_channels_depth, 2**(wf+i),
@@ -172,8 +181,8 @@ class UNet_V2(nn.Module):
 
 
     def forward(self, x, x_depth):
-        # DUBTE!!
-        
+        if map_depth_channels:
+            x_depth = input_cnn(x_depth)
         # Encoder RGB
         blocks_RGB = []
         for i, down in enumerate(self.down_path_RGB):
