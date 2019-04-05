@@ -142,7 +142,7 @@ net = net.to(device)
 # Optimizer
 optimizer_ft = optim.Adam(net.parameters(), lr=2e-4, betas=(0.9, 0.999), eps=1e-08, weight_decay=4e-5)
 #scheduler = optim.lr_scheduler.StepLR(optimizer_ft, step_size=100, gamma=0.1)
-loss = []
+loss_list = []
 history_val = []
 best_loss = 50
 for epoch in range(25):
@@ -192,7 +192,7 @@ for epoch in range(25):
     loss_train = loss_train/dataset.__len__()
     print("\n FINISHED TRAIN epoch %2d with loss: %.4f " % (epoch, loss_train ))
     # Val
-    loss.append(loss_train)
+    loss_list.append(loss_train)
     net.eval()
     loss_val = 0.0
     cont = 0
