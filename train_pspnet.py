@@ -170,12 +170,12 @@ for epoch in range(25):
 
         #Backward+update weights
         depth_loss = depth_criterion(predict_depth, outputs)
-        grad_loss = 0.
+        gradie_loss = 0.
         if epoch > 4:
             real_grad = net.imgrad(outputs)
-            grad_loss = grad_loss(predict_grad, real_grad)
+            gradie_loss = grad_loss(predict_grad, real_grad)
         #normal_loss = normal_loss(predict_grad, real_grad) * (epoch>7)
-        loss = depth_loss + grad_loss# + normal_loss
+        loss = depth_loss + gradie_loss# + normal_loss
         loss.backward()
         optimizer_ft.step()
         loss_train+=loss.item()*inputs.size(0)
