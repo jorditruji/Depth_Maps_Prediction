@@ -8,7 +8,7 @@ from torch.autograd import Variable
 import torch.nn as nn
 import sys
 import copy
-from Models.unet import UNet
+from Models.unet_v2 import ResNetUNet
 import torch.nn.functional as F
 
 import matplotlib 
@@ -101,21 +101,9 @@ class GradLoss(nn.Module):
 
 
 # Instantiate a model and dataset
-net = UNet()
-resnet = resnet18(pretrained=True)
+net = ResNetUNet(5)
 
-def load_weights_sequential(target, source_state):
-    new_dict = OrderedDict()
-    for (k1, v1), (k2, v2) in zip(target.state_dict().items(), source_state.items()):
-        if not k1.split('.')[0]== 'up_path':
-          print(k1,k2)
-          print(v1.shape, v2.shape)
-          new_dict[k1] = v2
-    target.state_dict().update(new_dict)
-    
 
-load_weights_sequential(net, resnet.state_dict() )
-del resnet
 depths = np.load('Data_management/dataset.npy').item()
 #depths = ['Test_samples/frame-000000.depth.pgm','Test_samples/frame-000025.depth.pgm','Test_samples/frame-000050.depth.pgm','Test_samples/frame-000075.depth.pgm']
 dataset = Dataset(depths['train'])
@@ -123,7 +111,7 @@ dataset_val = Dataset(depths['val'],train = False)
 
 # dataset = Dataset(np.load('Data_management/dataset.npy').item()['train'][1:20])
 # Parameters
-params = {'batch_size': 24 ,
+params = {'batch_size': 32 ,
           'shuffle': True,
           'num_workers': 12,
           'pin_memory': True}
@@ -147,7 +135,7 @@ net = net.to(device)
 # Optimizer
 optimizer_ft = optim.Adam(net.parameters(), lr=2e-4, betas=(0.9, 0.999), eps=1e-08, weight_decay=4e-5)
 #scheduler = optim.lr_scheduler.StepLR(optimizer_ft, step_size=100, gamma=0.1)
-loss = []
+loss_list = []
 history_val = []
 best_loss = 50
 for epoch in range(25):
@@ -175,12 +163,12 @@ for epoch in range(25):
 
         #Backward+update weights
         depth_loss = depth_criterion(predict_depth, outputs)
-        grad_loss = 0.
+        gradie_loss = 0.
         if epoch > 4:
             real_grad = net.imgrad(outputs)
-            grad_loss = grad_loss(predict_grad, real_grad)
+            gradie_loss = grad_loss(predict_grad, real_grad)
         #normal_loss = normal_loss(predict_grad, real_grad) * (epoch>7)
-        loss = depth_loss + grad_loss# + normal_loss
+        loss = depth_loss + 2*gradie_loss# + normal_loss
         loss.backward()
         optimizer_ft.step()
         loss_train+=loss.item()*inputs.size(0)
@@ -197,7 +185,7 @@ for epoch in range(25):
     loss_train = loss_train/dataset.__len__()
     print("\n FINISHED TRAIN epoch %2d with loss: %.4f " % (epoch, loss_train ))
     # Val
-    loss.append(loss_train)
+    loss_list.append(loss_train)
     net.eval()
     loss_val = 0.0
     cont = 0
@@ -237,9 +225,15 @@ for epoch in range(25):
     if loss_val< best_loss and epoch>6:
         best_loss = depth_loss
         best_model_wts = copy.deepcopy(net.state_dict())
+        torch.save(net.state_dict(), 'model_unet_V2')
+
+
+    if loss_val< best_loss and epoch>6:
+        best_loss = depth_loss
+        best_model_wts = copy.deepcopy(net.state_dict())
         torch.save(net.state_dict(), 'model_unet')
 
 
 
-np.save('loss_unet',loss)
+np.save('loss_unet',loss_list)
 np.save('loss_val_unet',history_val)
