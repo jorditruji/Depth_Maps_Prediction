@@ -3,7 +3,8 @@ from torchvision import models
 import torch
 from torchsummary import summary
 import torch.nn as nn
-
+import torch.nn.functional as F
+from torch.autograd import Variable
 
 
 def convrelu(in_channels, out_channels, kernel, padding):
