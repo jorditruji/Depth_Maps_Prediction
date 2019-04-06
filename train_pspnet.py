@@ -140,7 +140,7 @@ print(device)
 net = net.to(device)
 
 # Optimizer
-optimizer_ft = optim.Adam(net.parameters(), lr=2e-4, betas=(0.9, 0.999), eps=1e-08, weight_decay=4e-5)
+optimizer_ft = optim.Adam(net.parameters(), lr=1e-3, betas=(0.9, 0.999), eps=1e-08, weight_decay=4e-5)
 #scheduler = optim.lr_scheduler.StepLR(optimizer_ft, step_size=100, gamma=0.1)
 loss_list = []
 history_val = []
@@ -175,7 +175,7 @@ for epoch in range(25):
             real_grad = net.imgrad(outputs)
             gradie_loss = grad_loss(predict_grad, real_grad)
         #normal_loss = normal_loss(predict_grad, real_grad) * (epoch>7)
-        loss = depth_loss + gradie_loss# + normal_loss
+        loss = depth_loss + 2*gradie_loss# + normal_loss
         loss.backward()
         optimizer_ft.step()
         loss_train+=loss.item()*inputs.size(0)
@@ -232,9 +232,9 @@ for epoch in range(25):
     if loss_val< best_loss and epoch>6:
         best_loss = depth_loss
         best_model_wts = copy.deepcopy(net.state_dict())
-        torch.save(net.state_dict(), 'model_pspnet')
+        torch.save(net.state_dict(), 'model_pspnet_V2')
 
 
 
-np.save('loss_psp',loss)
+np.save('loss_psp',train_pspnet_predictions)
 np.save('loss_val_psp',history_val)
