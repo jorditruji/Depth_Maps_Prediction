@@ -46,7 +46,11 @@ class ResNetUNet(nn.Module):
         self.conv_original_size2 = convrelu(64 + 128, 64, 3, 1)
         
         self.conv_last = nn.Conv2d(64, n_class, 1)
-        
+
+        self.x_sobel, self.y_sobel = self.make_sobel_filters()
+        self.x_sobel = self.x_sobel.cuda()
+        self.y_sobel = self.y_sobel.cuda()
+
     def forward(self, input):
         x_original = self.conv_original_size0(input)
         x_original = self.conv_original_size1(x_original)
@@ -60,7 +64,6 @@ class ResNetUNet(nn.Module):
         layer4 = self.layer4_1x1(layer4)
         x = self.upsample_v2(layer4)
         layer3 = self.layer3_1x1(layer3)
-        print(x.size(),layer3.size(), layer4.size())
 
         x = torch.cat([x, layer3], dim=1)
         x = self.conv_up3(x)
@@ -85,8 +88,39 @@ class ResNetUNet(nn.Module):
         
         out = self.conv_last(x)        
         
-        return out
+        return out, self.imgrad(out)
+    
+    def make_sobel_filters(self):
+        ''' Returns sobel filters as part of the network'''
 
+        a = torch.Tensor([[1, 0, -1],
+                        [2, 0, -2],
+                        [1, 0, -1]])
+
+        # Add dims to fit batch_size, n_filters, filter shape
+        a = a.view((1,1,3,3))
+        a = Variable(a)
+
+        # Repeat for vertical contours
+        b = torch.Tensor([[1, 2, 1],
+                        [0, 0, 0],
+                        [-1, -2, -1]])
+
+        b = b.view((1,1,3,3))
+        b = Variable(b)
+
+        return a,b
+
+    
+    def imgrad(self,img):
+        # Filter horizontal contours
+        G_x = F.conv2d(img, self.x_sobel)
+        
+        # Filter vertical contrours
+        G_y = F.conv2d(img, self.y_sobel)
+
+        G = torch.sqrt(torch.pow(G_x,2)+ torch.pow(G_y,2))
+        return G
 
 
 if __name__ == "__main__":
