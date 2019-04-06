@@ -17,6 +17,7 @@ matplotlib.rcParams['agg.path.chunksize'] = 10000
 from matplotlib import path, rcParams
 import matplotlib.pyplot as plt
 
+
 # Save predictions
 
 def save_predictions(prediction, rgb, depth, name = 'test'):
