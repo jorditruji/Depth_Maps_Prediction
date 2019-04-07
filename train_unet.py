@@ -102,7 +102,7 @@ class GradLoss(nn.Module):
 
 
 # Instantiate a model and dataset
-net = ResNetUNet(5)
+net = ResNetUNet(1)
 
 
 depths = np.load('Data_management/dataset.npy').item()
