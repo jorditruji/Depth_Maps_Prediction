@@ -181,8 +181,11 @@ for epoch in range(25):
         loss_train+=loss.item()*inputs.size(0)
         if cont%250 == 0:
             #loss.append(depth_loss.item())
-            print("TRAIN: [epoch %2d][iter %4d] loss: %.4f" \
+            print("TRAIN: [epoch %2d][iter %4d] log_MSEloss: %.4f" \
             % (epoch, cont, depth_loss.item()))
+            #loss.append(depth_loss.item())
+            print("TRAIN: [epoch %2d][iter %4d] log_GRADloss total: %.4f" \
+            % (epoch, cont, gradie_loss.item()))
     if epoch%2==0:
         predict_depth = predict_depth.detach().cpu()
         #np.save('pspnet'+str(epoch), saver)
@@ -236,5 +239,5 @@ for epoch in range(25):
 
 
 
-np.save('loss_psp',train_pspnet_predictions)
+np.save('loss_psp',loss_list)
 np.save('loss_val_psp',history_val)

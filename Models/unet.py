@@ -145,7 +145,7 @@ class UNet_V2(nn.Module):
         self.depth = depth
         prev_channels = in_channels[0]
 
-        self.input_cnn = nn.Conv2d(in_channels[1], in_channels[0], kernel_size=1)
+        self.input_cnn = nn.Conv2d(in_channels[1], in_channels[0], kernel_size=1, bias = False)
 
         # RGB Encoder
         self.down_path_RGB = nn.ModuleList()
