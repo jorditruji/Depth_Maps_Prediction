@@ -184,8 +184,9 @@ for epoch in range(25):
             print("TRAIN: [epoch %2d][iter %4d] log_MSEloss: %.4f" \
             % (epoch, cont, depth_loss.item()))
             #loss.append(depth_loss.item())
-            print("TRAIN: [epoch %2d][iter %4d] log_GRADloss total: %.4f" \
-            % (epoch, cont, gradie_loss.item()))
+            if epoch>4:
+                print("TRAIN: [epoch %2d][iter %4d] log_GRADloss total: %.4f" \
+                % (epoch, cont, gradie_loss.item()))
     if epoch%2==0:
         predict_depth = predict_depth.detach().cpu()
         #np.save('pspnet'+str(epoch), saver)
