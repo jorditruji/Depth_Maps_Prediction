@@ -36,7 +36,7 @@ means = []
 stds = []
 max_depth = []
 min_depth = []
-dataset = Dataset(test)
+dataset = Dataset(train_dict)
 total = len(train_dict)
 cont = 1
 for sample,depth in zip(dataset.RGB_frames,dataset.depth_frames):
@@ -55,9 +55,6 @@ for sample,depth in zip(dataset.RGB_frames,dataset.depth_frames):
 		min_depth.append(np.amin(depth_img[depth_img>0]))
 	except:
 		print("failes")
-	if cont==7:
-		break
-
 
 means = np.array(means)
 stds = np.array(stds)
