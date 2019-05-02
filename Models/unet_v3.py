@@ -66,8 +66,7 @@ class ResNetUNet_V2(nn.Module):
 
     def forward(self, input, ground_truth):
         # Intermediate channels
-        print("Inputs: \n")
-        print("RGB: {}, Depth:{}".format(input.size(), ground_truth.size()))
+
         x_original = self.conv_original_size0(input)
         x_original = self.conv_original_size1(x_original)
         # Down pass RGB
