@@ -112,13 +112,16 @@ dataset_val = Dataset(depths['val'],train = False)
 
 # dataset = Dataset(np.load('Data_management/dataset.npy').item()['train'][1:20])
 # Parameters
-params = {'batch_size': 4 ,
+params = {'batch_size': 16 ,
           'shuffle': True,
           'num_workers': 12,
           'pin_memory': True}
-
+params_test = {'batch_size': 16 ,
+          'shuffle': False,
+          'num_workers': 12,
+          'pin_memory': True}
 training_generator = data.DataLoader(dataset,**params)
-val_generator = data.DataLoader(dataset_val,**params)
+val_generator = data.DataLoader(dataset_val,**params_test)
 
 net.train()
 print(net)
@@ -157,28 +160,28 @@ for epoch in range(25):
         optimizer_ft.zero_grad()
 
         #Forward
-        predict_depth, predict_grad = net(inputs,outputs)
+        predicts, grads, manifolds = net(inputs,outputs)
         
         #Sobel grad estimates:
         
 
         #Backward+update weights
-        depth_loss = depth_criterion(predict_depth, outputs)
+        depth_loss = depth_criterion(predicts[0], outputs) + depth_criterion(predicts[1], outputs)
         gradie_loss = 0.
         if epoch > 4:
             real_grad = net.imgrad(outputs)
-            gradie_loss = grad_loss(predict_grad, real_grad)
+            gradie_loss = grad_loss(grads[0], real_grad)+ grad_loss(grads[1], real_grad)
         #normal_loss = normal_loss(predict_grad, real_grad) * (epoch>7)
         loss = depth_loss + 2*gradie_loss# + normal_loss
         loss.backward()
         optimizer_ft.step()
         loss_train+=loss.item()*inputs.size(0)
-        if cont%250 == 0:
+        if cont%20 == 0:
             #loss.append(depth_loss.item())
             print("TRAIN: [epoch %2d][iter %4d] loss: %.4f" \
             % (epoch, cont, depth_loss.item()))
     if epoch%2==0:
-        predict_depth = predict_depth.detach().cpu()
+        predict_depth = predicts[0].detach().cpu()
         #np.save('pspnet'+str(epoch), saver)
         save_predictions(predict_depth[0].detach(), rgbs[0], outputs[0],name ='unet_train_epoch_'+str(epoch))
 
@@ -201,20 +204,20 @@ for epoch in range(25):
             outputs = depths.cuda(async=True)
             
             #Forward
-            predict_depth , predict_grad= net(inputs)
+            predicts, grads, manifolds= net(inputs)
 
             #Sobel grad estimates:
             real_grad = net.imgrad(outputs)
 
-            depth_loss = depth_criterion(predict_depth, outputs)#+depth_criterion(predict_grad, real_grad)
+            depth_loss = depth_criterion(predicts[0], outputs)#+depth_criterion(predict_grad, real_grad)
             loss_val+=depth_loss.item()*inputs.size(0)
-            if cont%250 == 0:
+            if cont%20 == 0:
                 print("VAL: [epoch %2d][iter %4d] loss: %.4f" \
                 % (epoch, cont, depth_loss))   
             
             #scheduler.step()
         if epoch%2==0:
-            predict_depth = predict_depth.detach().cpu()
+            predict_depth = predicts[0].detach().cpu()
             #np.save('pspnet'+str(epoch), saver)
             save_predictions(predict_depth[0].detach(), rgbs[0], outputs[0],name ='unet_epoch_'+str(epoch))
 

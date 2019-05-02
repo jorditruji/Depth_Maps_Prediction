@@ -76,13 +76,11 @@ class ResNetUNet_V2(nn.Module):
         layer2 = self.layer2(layer1)
         layer3 = self.layer3(layer2)        
         layer4 = self.layer4(layer3)
-        print("Encoded RGB: {}".format(layer4.size()))
+        mani_RGB =  Variable(layer4.data.clone(), requires_grad=True)
         # Down pass depth
         depth_3channel = self.depth_input_cnn(ground_truth)
         depth_original = self.conv_original_size0(depth_3channel)
-        print("Depth first skip: {}".format(depth_original.size()))
         depth_original = self.conv_original_size1(depth_original)
-        print("Depth first skip: {}".format(depth_original.size()))
 
 
         depth_layer0 = self.depth_layer0(depth_3channel)            
@@ -90,7 +88,7 @@ class ResNetUNet_V2(nn.Module):
         depth_layer2 = self.depth_layer2(depth_layer1)
         depth_layer3 = self.depth_layer3(depth_layer2)        
         depth_layer4 = self.depth_layer4(depth_layer3)        
-        
+        mani_depth = Variable(depth_layer4.data.clone(), requires_grad=True)
         # Decoder RGB
         layer4 = self.layer4_1x1(layer4)
         x = self.upsample_v2(layer4)
@@ -145,8 +143,9 @@ class ResNetUNet_V2(nn.Module):
         depth = torch.cat([depth, depth_original], dim=1)
         depth = self.conv_original_size2(depth)        
         
-        out_depth = self.conv_last(depth)   
-        return out, self.imgrad(out)
+        out_depth = self.conv_last(depth)
+        # Retornem 2 reconstruccions, els gradients de les reconstruccions i els manifolds
+        return (out,out_depth), (self.imgrad(out),self.imgrad(out)),(mani_RGB, mani_depth)
     
     def make_sobel_filters(self):
         ''' Returns sobel filters as part of the network'''
