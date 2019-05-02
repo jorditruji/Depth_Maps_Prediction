@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 from __future__ import division
 import cv2
-from read_pgm_depth import NetpbmFile
+from .read_pgm_depth import NetpbmFile
 import numpy as np
 from itertools import product
 import time

@@ -61,11 +61,13 @@ class ResNetUNet_V2(nn.Module):
         								nn.Sigmoid())
 
         self.x_sobel, self.y_sobel = self.make_sobel_filters()
-        self.x_sobel = self.x_sobel#.cuda()
-        self.y_sobel = self.y_sobel#.cuda()
+        self.x_sobel = self.x_sobel.cuda()
+        self.y_sobel = self.y_sobel.cuda()
 
     def forward(self, input, ground_truth):
         # Intermediate channels
+        print("Inputs: \n")
+        print("RGB: {}, Depth:{}".format(input.size(), ground_truth.size()))
         x_original = self.conv_original_size0(input)
         x_original = self.conv_original_size1(x_original)
         # Down pass RGB
@@ -74,11 +76,14 @@ class ResNetUNet_V2(nn.Module):
         layer2 = self.layer2(layer1)
         layer3 = self.layer3(layer2)        
         layer4 = self.layer4(layer3)
-
+        print("Encoded RGB: {}".format(layer4.size()))
         # Down pass depth
         depth_3channel = self.depth_input_cnn(ground_truth)
         depth_original = self.conv_original_size0(depth_3channel)
-        depth_original = self.conv_original_size1(depth_3channel)
+        print("Depth first skip: {}".format(depth_original.size()))
+        depth_original = self.conv_original_size1(depth_original)
+        print("Depth first skip: {}".format(depth_original.size()))
+
 
         depth_layer0 = self.depth_layer0(depth_3channel)            
         depth_layer1 = self.depth_layer1(depth_layer0)
