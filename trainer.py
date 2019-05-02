@@ -204,7 +204,7 @@ for epoch in range(25):
             outputs = depths.cuda(async=True)
             
             #Forward
-            predicts, grads, manifolds= net(inputs)
+            predicts, grads, manifolds= net(inputs,outputs)
 
             #Sobel grad estimates:
             real_grad = net.imgrad(outputs)
