@@ -13,7 +13,7 @@ def convrelu(in_channels, out_channels, kernel, padding):
         nn.ReLU(inplace=True),
     )
 
-class ResNetUNet(nn.Module):
+class ResNetUNet_V2(nn.Module):
 
     def __init__(self, n_class):
         super().__init__()
@@ -61,8 +61,8 @@ class ResNetUNet(nn.Module):
         								nn.Sigmoid())
 
         self.x_sobel, self.y_sobel = self.make_sobel_filters()
-        self.x_sobel = self.x_sobel.cuda()
-        self.y_sobel = self.y_sobel.cuda()
+        self.x_sobel = self.x_sobel#.cuda()
+        self.y_sobel = self.y_sobel#.cuda()
 
     def forward(self, input, ground_truth):
         # Intermediate channels
