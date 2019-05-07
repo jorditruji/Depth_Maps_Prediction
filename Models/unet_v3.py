@@ -117,6 +117,7 @@ class ResNetUNet_V2(nn.Module):
         out = self.conv_last(x)        
         
         # Decoder depth
+        '''
         depth_layer4 = self.layer4_1x1(depth_layer4)
         depth = self.upsample_v2(depth_layer4)
         depth_layer3 = self.layer3_1x1(depth_layer3)
@@ -143,9 +144,12 @@ class ResNetUNet_V2(nn.Module):
         depth = self.conv_original_size2(depth)        
         
         out_depth = self.conv_last(depth)
+        '''
+
         # Retornem 2 reconstruccions, els gradients de les reconstruccions i els manifolds
-        return (out,out_depth), (self.imgrad(out),self.imgrad(out_depth)),(mani_RGB, mani_depth)
-    
+        #return (out,out_depth), (self.imgrad(out),self.imgrad(out_depth)),(mani_RGB, mani_depth)
+        return (out,None), (self.imgrad(out),None),(mani_RGB, mani_depth)
+
     def make_sobel_filters(self):
         ''' Returns sobel filters as part of the network'''
 

@@ -164,13 +164,13 @@ for epoch in range(25):
         predicts, grads, manifolds = net(inputs,outputs)
            
         #Backward+update weights
-        depth_loss = depth_criterion(predicts[0], outputs) + depth_criterion(predicts[1], outputs)
+        depth_loss = depth_criterion(predicts[0], outputs) #+ depth_criterion(predicts[1], outputs)
         
         # Grad loss
         gradie_loss = 0.
         if epoch > 4:
             real_grad = net.imgrad(outputs)
-            gradie_loss = grad_loss(grads[0], real_grad)+ grad_loss(grads[1], real_grad)
+            gradie_loss = grad_loss(grads[0], real_grad)#+ grad_loss(grads[1], real_grad)
         #normal_loss = normal_loss(predict_grad, real_grad) * (epoch>7)
 
         # Manifold loss
@@ -190,7 +190,7 @@ for epoch in range(25):
         save_predictions(predict_depth[0].detach(), rgbs[0], outputs[0],name ='unet_train1_epoch_'+str(epoch))
         predict_depth = predicts[1].detach().cpu()
         #np.save('pspnet'+str(epoch), saver)
-        save_predictions(predict_depth[0].detach(), rgbs[1], outputs[1],name ='unet_train2_epoch_'+str(epoch))
+        save_predictions(predict_depth[1].detach(), rgbs[1], outputs[1],name ='unet_train2_epoch_'+str(epoch))
 
 
     loss_train = loss_train/dataset.__len__()
@@ -229,7 +229,7 @@ for epoch in range(25):
             save_predictions(predict_depth[0].detach(), rgbs[0], outputs[0],name ='unet1_epoch_'+str(epoch))
             predict_depth = predicts[1].detach().cpu()
             #np.save('pspnet'+str(epoch), saver)
-            save_predictions(predict_depth[0].detach(), rgbs[1], outputs[1],name ='unet2_epoch_'+str(epoch))
+            save_predictions(predict_depth[1].detach(), rgbs[1], outputs[1],name ='unet2_epoch_'+str(epoch))
 
 
         loss_val = loss_val/dataset_val.__len__()
