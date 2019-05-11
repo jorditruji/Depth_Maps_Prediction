@@ -176,7 +176,7 @@ for epoch in range(25):
         # Manifold loss
         embed_lose = mani_loss(manifolds[0],manifolds[1])
 
-        loss = depth_loss + 10*gradie_loss +0.075*embed_lose# + normal_loss
+        loss = depth_loss + 50*gradie_loss +0.045*embed_lose# + normal_loss
         loss.backward()
         optimizer_ft.step()
         loss_train+=loss.item()*inputs.size(0)
