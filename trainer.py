@@ -242,10 +242,6 @@ for epoch in range(25):
         torch.save(net.state_dict(), 'model_unet_V2')
 
 
-    if loss_val< best_loss and epoch>6:
-        best_loss = depth_loss
-        best_model_wts = copy.deepcopy(net.state_dict())
-        torch.save(net.state_dict(), 'model_unet')
 
 
 

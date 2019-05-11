@@ -56,6 +56,9 @@ class ResNetUNet_V2(nn.Module):
         self.conv_original_size0 = convrelu(3, 64, 3, 1)
         self.conv_original_size1 = convrelu(64, 64, 3, 1)
         self.conv_original_size2 = convrelu(64 + 128, 64, 3, 1)
+
+        self.depth_conv_original_size0 = convrelu(3, 64, 3, 1)
+        self.depth_conv_original_size1 = convrelu(64, 64, 3, 1)
         
         self.conv_last = nn.Sequential(nn.Conv2d(64, n_class, 1),
         								nn.Sigmoid())
@@ -78,10 +81,8 @@ class ResNetUNet_V2(nn.Module):
         mani_RGB =  Variable(layer4.data.clone(), requires_grad=True)
         # Down pass depth
         depth_3channel = self.depth_input_cnn(ground_truth)
-        depth_original = self.conv_original_size0(depth_3channel)
-        depth_original = self.conv_original_size1(depth_original)
-
-
+        depth_original = self.depth_conv_original_size0(depth_3channel)
+        depth_original = self.depth_conv_original_size1(depth_original)
         depth_layer0 = self.depth_layer0(depth_3channel)            
         depth_layer1 = self.depth_layer1(depth_layer0)
         depth_layer2 = self.depth_layer2(depth_layer1)
@@ -120,14 +121,12 @@ class ResNetUNet_V2(nn.Module):
         '''
         depth_layer4 = self.layer4_1x1(depth_layer4)
         depth = self.upsample_v2(depth_layer4)
-        depth_layer3 = self.layer3_1x1(depth_layer3)
 
-        depth = torch.cat([depth, depth_layer3], dim=1)
+        depth = torch.cat([depth, layer3], dim=1)
         depth = self.conv_up3(depth)
  
         depth = self.upsample(depth)
-        depth_layer2 = self.layer2_1x1(depth_layer2)
-        depth = torch.cat([depth, depth_layer2], dim=1)
+        depth = torch.cat([depth, layer2], dim=1)
         depth = self.conv_up2(depth)
         depth = self.upsample(depth)
         depth_layer1 = self.layer1_1x1(depth_layer1)
@@ -145,11 +144,12 @@ class ResNetUNet_V2(nn.Module):
         
         out_depth = self.conv_last(depth)
         '''
+        #return (out_depth,None), (self.imgrad(out),None),(mani_RGB, mani_depth)
 
         # Retornem 2 reconstruccions, els gradients de les reconstruccions i els manifolds
         #return (out,out_depth), (self.imgrad(out),self.imgrad(out_depth)),(mani_RGB, mani_depth)
         return (out,None), (self.imgrad(out),None),(mani_RGB, mani_depth)
-
+        
     def make_sobel_filters(self):
         ''' Returns sobel filters as part of the network'''
 
