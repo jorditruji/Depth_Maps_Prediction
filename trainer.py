@@ -176,7 +176,7 @@ for epoch in range(25):
         # Manifold loss
         embed_lose = mani_loss(manifolds[0],manifolds[1])
 
-        loss = depth_loss + 10*gradie_loss + embed_lose# + normal_loss
+        loss = depth_loss + 10*gradie_loss +0.075*embed_lose# + normal_loss
         loss.backward()
         optimizer_ft.step()
         loss_train+=loss.item()*inputs.size(0)
@@ -184,11 +184,12 @@ for epoch in range(25):
             #loss.append(depth_loss.item())
             print("TRAIN: [epoch %2d][iter %4d] loss: %.4f" \
             % (epoch, cont, depth_loss.item()))
+            print("Mani: {}, depth:{}, gradient{}".format(0.075*embed_lose, depth_loss, gradie_loss))
     if epoch%1==0:
         predict_depth = predicts[0].detach().cpu()
         #np.save('pspnet'+str(epoch), saver)
         save_predictions(predict_depth[0].detach(), rgbs[0], outputs[0],name ='unet_train1_epoch_'+str(epoch))
-        predict_depth = predicts[1].detach().cpu()
+        #predict_depth = predicts[1].detach().cpu()
         #np.save('pspnet'+str(epoch), saver)
         save_predictions(predict_depth[1].detach(), rgbs[1], outputs[1],name ='unet_train2_epoch_'+str(epoch))
 
@@ -227,7 +228,7 @@ for epoch in range(25):
             predict_depth = predicts[0].detach().cpu()
             #np.save('pspnet'+str(epoch), saver)
             save_predictions(predict_depth[0].detach(), rgbs[0], outputs[0],name ='unet1_epoch_'+str(epoch))
-            predict_depth = predicts[1].detach().cpu()
+            #predict_depth = predicts[1].detach().cpu()
             #np.save('pspnet'+str(epoch), saver)
             save_predictions(predict_depth[1].detach(), rgbs[1], outputs[1],name ='unet2_epoch_'+str(epoch))
 
