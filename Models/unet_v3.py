@@ -146,7 +146,7 @@ class ResNetUNet_V2(nn.Module):
         depth = self.conv_up0(depth)
         
         depth = self.upsample(depth)
-        depth = torch.cat([depth, depth_original], dim=1)
+        depth = torch.cat([depth, x_original], dim=1)
         depth = self.conv_original_size2(depth)        
         
         out_depth = self.conv_last(depth)
