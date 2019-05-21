@@ -174,7 +174,7 @@ for epoch in range(25):
         #normal_loss = normal_loss(predict_grad, real_grad) * (epoch>7)
 
         # Manifold loss
-        embed_lose = mani_loss(manifolds[0],manifolds[1])
+        embed_lose = 0#mani_loss(manifolds[0],manifolds[1])
 
         loss = depth_loss + 50*gradie_loss +0.045*embed_lose# + normal_loss
         loss.backward()

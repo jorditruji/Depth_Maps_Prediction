@@ -89,6 +89,9 @@ class ResNetUNet_V2(nn.Module):
         depth_layer3 = self.depth_layer3(depth_layer2)        
         depth_layer4 = self.depth_layer4(depth_layer3)        
         mani_depth = Variable(depth_layer4.data.clone(), requires_grad=True)
+
+
+        
         # Decoder RGB
         layer4 = self.layer4_1x1(layer4)
         x = self.upsample_v2(layer4)
