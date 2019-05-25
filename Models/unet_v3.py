@@ -90,8 +90,13 @@ class ResNetUNet_V2(nn.Module):
         depth_layer4 = self.depth_layer4(depth_layer3)        
         mani_depth = Variable(depth_layer4.data.clone(), requires_grad=True)
 
-
         
+        # Encoder - decoder connections
+        layer4 = self.layer4_1x1(layer4)
+        layer3 = self.layer3_1x1(layer3)
+        layer2 = self.layer2_1x1(layer2)
+        layer1 = self.layer1_1x1(layer1)
+        '''
         # Decoder RGB
         layer4 = self.layer4_1x1(layer4)
         x = self.upsample_v2(layer4)
@@ -119,9 +124,9 @@ class ResNetUNet_V2(nn.Module):
         x = self.conv_original_size2(x)        
         
         out = self.conv_last(x)        
-        
-        # Decoder depth
         '''
+        # Decoder depth
+        
         depth_layer4 = self.layer4_1x1(depth_layer4)
         depth = self.upsample_v2(depth_layer4)
 
@@ -132,26 +137,24 @@ class ResNetUNet_V2(nn.Module):
         depth = torch.cat([depth, layer2], dim=1)
         depth = self.conv_up2(depth)
         depth = self.upsample(depth)
-        depth_layer1 = self.layer1_1x1(depth_layer1)
-        depth = torch.cat([depth, depth_layer1], dim=1)
+        depth = torch.cat([depth, layer1], dim=1)
         depth = self.conv_up1(depth)
 
         depth = self.upsample(depth)
-        depth_layer0 = self.layer0_1x1(layer0)
         depth = torch.cat([depth, layer0], dim=1)
         depth = self.conv_up0(depth)
         
         depth = self.upsample(depth)
-        depth = torch.cat([depth, depth_original], dim=1)
+        depth = torch.cat([depth, x_original], dim=1)
         depth = self.conv_original_size2(depth)        
         
         out_depth = self.conv_last(depth)
-        '''
-        #return (out_depth,None), (self.imgrad(out),None),(mani_RGB, mani_depth)
+        
+        return (out_depth,None), (self.imgrad(out_depth),None),(mani_RGB, mani_depth)
 
         # Retornem 2 reconstruccions, els gradients de les reconstruccions i els manifolds
         #return (out,out_depth), (self.imgrad(out),self.imgrad(out_depth)),(mani_RGB, mani_depth)
-        return (out,None), (self.imgrad(out),None),(mani_RGB, mani_depth)
+        #return (out,None), (self.imgrad(out),None),(mani_RGB, mani_depth)
         
     def make_sobel_filters(self):
         ''' Returns sobel filters as part of the network'''
