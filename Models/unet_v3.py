@@ -78,7 +78,7 @@ class ResNetUNet_V2(nn.Module):
         layer2 = self.layer2(layer1)
         layer3 = self.layer3(layer2)        
         layer4 = self.layer4(layer3)
-        mani_RGB =  Variable(layer4.data.clone(), requires_grad=True)
+        #mani_RGB =  Variable(layer4.data.clone(), requires_grad=True)
         # Down pass depth
         depth_3channel = self.depth_input_cnn(ground_truth)
         depth_original = self.depth_conv_original_size0(depth_3channel)
@@ -88,7 +88,7 @@ class ResNetUNet_V2(nn.Module):
         depth_layer2 = self.depth_layer2(depth_layer1)
         depth_layer3 = self.depth_layer3(depth_layer2)        
         depth_layer4 = self.depth_layer4(depth_layer3)        
-        mani_depth = Variable(depth_layer4.data.clone(), requires_grad=True)
+        #mani_depth = Variable(depth_layer4.data.clone(), requires_grad=True)
 
         
         # Encoder - decoder connections
@@ -150,7 +150,7 @@ class ResNetUNet_V2(nn.Module):
         
         out_depth = self.conv_last(depth)
         
-        return (out_depth,None), (self.imgrad(out_depth),None),(mani_RGB, mani_depth)
+        return (out_depth,None), (self.imgrad(out_depth),None),(None, None)
 
         # Retornem 2 reconstruccions, els gradients de les reconstruccions i els manifolds
         #return (out,out_depth), (self.imgrad(out),self.imgrad(out_depth)),(mani_RGB, mani_depth)
