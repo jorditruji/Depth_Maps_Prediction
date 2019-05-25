@@ -112,11 +112,11 @@ dataset_val = Dataset(depths['val'],train = False)
 
 # dataset = Dataset(np.load('Data_management/dataset.npy').item()['train'][1:20])
 # Parameters
-params = {'batch_size': 16 ,
+params = {'batch_size': 6 ,
           'shuffle': True,
           'num_workers': 12,
           'pin_memory': True}
-params_test = {'batch_size': 16 ,
+params_test = {'batch_size': 6 ,
           'shuffle': False,
           'num_workers': 12,
           'pin_memory': True}

@@ -66,6 +66,7 @@ class ResNetUNet_V2(nn.Module):
         self.x_sobel, self.y_sobel = self.make_sobel_filters()
         self.x_sobel = self.x_sobel.cuda()
         self.y_sobel = self.y_sobel.cuda()
+        self.base_layers = None
 
     def forward(self, input, ground_truth):
         # Intermediate channels
