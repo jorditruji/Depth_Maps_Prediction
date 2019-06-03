@@ -118,13 +118,16 @@ dataset_val = Dataset(depths['val'],train = False)
 
 # dataset = Dataset(np.load('Data_management/dataset.npy').item()['train'][1:20])
 # Parameters
-params = {'batch_size': 32 ,
+params = {'batch_size': 36 ,
           'shuffle': True,
           'num_workers': 16,
           'pin_memory': True}
-
+params_Val = {'batch_size': 36 ,
+          'shuffle': False,
+          'num_workers': 16,
+          'pin_memory': True}
 training_generator = data.DataLoader(dataset,**params)
-val_generator = data.DataLoader(dataset_val,**params)
+val_generator = data.DataLoader(dataset_val,**params_Val)
 
 net.train()
 print(net)
@@ -143,6 +146,8 @@ net = net.to(device)
 optimizer_ft = optim.Adam(net.parameters(), lr=1e-4, betas=(0.9, 0.999), eps=1e-08, weight_decay=4e-5)
 #scheduler = optim.lr_scheduler.StepLR(optimizer_ft, step_size=100, gamma=0.1)
 loss_list = []
+mse_list = []
+grad_list = []
 history_val = []
 best_loss = 50
 for epoch in range(25):
@@ -150,6 +155,8 @@ for epoch in range(25):
     net.train()
     cont = 0
     loss_train = 0.0
+    log_mse = 0.0
+    grad_loss = 0.0
 
     for depths, rgbs, filename in training_generator:
         cont+=1
@@ -174,11 +181,15 @@ for epoch in range(25):
         if epoch > 4:
             real_grad = net.imgrad(outputs)
             gradie_loss = grad_loss(predict_grad, real_grad)
+            grad_loss += gradie_loss*inputs.size(0)
         #normal_loss = normal_loss(predict_grad, real_grad) * (epoch>7)
-        loss = depth_loss + 2*gradie_loss# + normal_loss
+        loss = depth_loss + 12*gradie_loss# + normal_loss
         loss.backward()
         optimizer_ft.step()
         loss_train+=loss.item()*inputs.size(0)
+        log_mse+=depth_loss.item()*inputs.size(0)
+
+
         if cont%250 == 0:
             #loss.append(depth_loss.item())
             print("TRAIN: [epoch %2d][iter %4d] log_MSEloss: %.4f" \
@@ -194,9 +205,14 @@ for epoch in range(25):
 
 
     loss_train = loss_train/dataset.__len__()
+    grad_loss = grad_loss/dataset.__len__()
+    log_mse = log_mse/dataset.__len__()
+
     print("\n FINISHED TRAIN epoch %2d with loss: %.4f " % (epoch, loss_train ))
     # Val
     loss_list.append(loss_train)
+    mse_list.append(log_mse)
+    grad_list.append(grad_loss)
     net.eval()
     loss_val = 0.0
     cont = 0
@@ -242,3 +258,7 @@ for epoch in range(25):
 
 np.save('loss_psp',loss_list)
 np.save('loss_val_psp',history_val)
+
+
+np.save('loss_psp_mse',log_mse)
+np.save('loss_psp_grad',grad_loss)

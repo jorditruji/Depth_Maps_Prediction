@@ -10,16 +10,13 @@ import sys
 import copy
 from Models.unet_v3 import ResNetUNet_V2
 import torch.nn.functional as F
-
 import matplotlib 
 matplotlib.use('Agg')
 matplotlib.rcParams['agg.path.chunksize'] = 10000
 from matplotlib import path, rcParams
 import matplotlib.pyplot as plt
 
-
 # Save predictions
-
 def save_predictions(prediction, rgb, depth, name = 'test'):
     # Matplotlib style display = channels last
     inp = rgb.numpy().transpose((1, 2, 0))
