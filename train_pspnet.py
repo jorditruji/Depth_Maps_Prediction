@@ -156,7 +156,7 @@ for epoch in range(25):
     cont = 0
     loss_train = 0.0
     log_mse = 0.0
-    grad_loss = 0.0
+    grad_lossy = 0.0
 
     for depths, rgbs, filename in training_generator:
         cont+=1
@@ -181,7 +181,7 @@ for epoch in range(25):
         if epoch > 4:
             real_grad = net.imgrad(outputs)
             gradie_loss = grad_loss(predict_grad, real_grad)
-            grad_loss += gradie_loss*inputs.size(0)
+            grad_lossy += gradie_loss*inputs.size(0)
         #normal_loss = normal_loss(predict_grad, real_grad) * (epoch>7)
         loss = depth_loss + 12*gradie_loss# + normal_loss
         loss.backward()
@@ -205,14 +205,14 @@ for epoch in range(25):
 
 
     loss_train = loss_train/dataset.__len__()
-    grad_loss = grad_loss/dataset.__len__()
+    grad_lossy = grad_lossy/dataset.__len__()
     log_mse = log_mse/dataset.__len__()
 
     print("\n FINISHED TRAIN epoch %2d with loss: %.4f " % (epoch, loss_train ))
     # Val
     loss_list.append(loss_train)
     mse_list.append(log_mse)
-    grad_list.append(grad_loss)
+    grad_list.append(grad_lossy)
     net.eval()
     loss_val = 0.0
     cont = 0
@@ -260,5 +260,5 @@ np.save('loss_psp',loss_list)
 np.save('loss_val_psp',history_val)
 
 
-np.save('loss_psp_mse',log_mse)
-np.save('loss_psp_grad',grad_loss)
+np.save('loss_psp_mse',grad_list)
+np.save('loss_psp_grad',grad_list)
